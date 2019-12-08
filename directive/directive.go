@@ -9,28 +9,14 @@ import (
 	"github.com/phelmkamp/metatag/meta"
 )
 
-// type Directive func()
-
-// func New(name string) Directive {
-// 	switch name {
-// 	case "getter":
-// 		return getter
-// 	case "setter":
-// 		return setter
-// 	case "filter":
-// 		return filter
-// 	case "find":
-// 		return find
-// 	}
-// 	return nil
-// }
-
+// Ptr converts the receiver to a pointer for all subsequent directives
 func Ptr(typNm string) string {
 	ptrTyp := "*" + typNm
 	log.Printf("Using pointer receiver: %s\n", ptrTyp)
 	return ptrTyp
 }
 
+// Getter generates a getter method for each name of the given field
 func Getter(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
 	for _, fldNm := range f.Names {
 		method := upperFirst(fldNm.Name)
@@ -43,11 +29,12 @@ func Getter(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
 	}
 }
 
+// Setter generates a setter method for each name of the given field
 func Setter(metaFile *meta.File, rcv, rcvType, elemType, fldType string, f *ast.Field) {
 	for _, fldNm := range f.Names {
 		method := "Set" + upperFirst(fldNm.Name)
 
-		arg, _ := first(elemType) // lowerFirst(fldNm.Name)
+		arg, _ := first(elemType)
 		arg = strings.ToLower(arg)
 
 		ptrRcvType := rcvType
@@ -60,6 +47,7 @@ func Setter(metaFile *meta.File, rcv, rcvType, elemType, fldType string, f *ast.
 	}
 }
 
+// Filter generates a filter method for each name of the given field
 func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f *ast.Field) {
 	for _, fldNm := range f.Names {
 		if elemType == fldType {
@@ -69,7 +57,7 @@ func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, 
 
 		method := "Filter" + upperFirst(fldNm.Name)
 
-		arg, _ := first(elemType) // lowerFirst(fldNm.Name)
+		arg, _ := first(elemType)
 		arg = strings.ToLower(arg)
 
 		log.Printf("Adding method: %s\n", method)
@@ -77,6 +65,7 @@ func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, 
 	}
 }
 
+// Find generates a find method for each name of the given field
 func Find(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f *ast.Field) {
 	log.Print("Adding import: \"reflect\"\n")
 	metaFile.Imports["reflect"] = struct{}{}
@@ -89,7 +78,7 @@ func Find(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f 
 
 		method := "Find" + upperFirst(strings.TrimSuffix(fldNm.Name, "s"))
 
-		arg, _ := first(elemType) // lowerFirst(fldNm.Name)
+		arg, _ := first(elemType)
 		arg = strings.ToLower(arg)
 
 		log.Printf("Adding method: %s\n", method)
