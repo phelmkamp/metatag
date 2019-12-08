@@ -38,12 +38,12 @@ Generates a setter. Method name is the name of the field prepended with `Set`. A
 
 `filter` (slice only)
 
-Generates a method that returns a copy of the slice, omitting elements that match the given function. Method name is the name of the field prepended with `Filter`. Uses value receiver by default.
+Generates a method that returns a copy of the slice, omitting elements that are rejected by the given function. Method name is the name of the field prepended with `Filter`. Uses value receiver by default.
 
-`find`
+`find` (slice only)
 
 Generates a method that returns the index of the first element that matches the argument (using `reflect.DeepEqual`). Method name is the name of the field minus any plural `s`, prepended with `Find`. Uses value receiver by default.
 
 `ptr`
 
-Indicates that a pointer receiver always be used for subsequent directives.
+Specifies that a pointer receiver be used for all subsequent directives.
