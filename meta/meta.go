@@ -5,6 +5,17 @@ import (
 	"strings"
 )
 
+const (
+	fileTemplate   = "package %s\n%s%s"
+	methodTemplate = "func (%s %s) %s(%s)%s{\n%s\n}"
+	funcTemplate   = "func(%s)%s"
+
+	getterTemplate   = "\treturn %s.%s"
+	setterTemplate   = "\t%s.%s = %s"
+	finderTemplate   = "\tfor i := range %s.%s {\n\t\tif reflect.DeepEqual(%s.%s[i], %s) {\n\t\t\treturn i\n\t\t}\n\t}\n\treturn -1"
+	filtererTemplate = "\tfound := make([]%s, 0, len(%s.%s))\n\tfor i := range %s.%s {\n\t\tif fn(%s.%s[i]) {\n\t\t\tfound = append(found, %s.%s[i])\n\t\t}\n\t}\n\treturn found"
+)
+
 type File struct {
 	Package string
 	Imports Imports
@@ -19,7 +30,7 @@ func NewFile(pkg string) File {
 }
 
 func (f File) String() string {
-	return fmt.Sprintf("package %s\n%s%s", f.Package, f.Imports, f.Methods)
+	return fmt.Sprintf(fileTemplate, f.Package, f.Imports, f.Methods)
 }
 
 type Imports map[string]struct{}
@@ -46,10 +57,7 @@ type Method struct {
 	Name    string
 	RetVals string
 	Body    string
-	// Field   string
-	args string
-	// ret     string
-	// assign  string
+	args    string
 }
 
 func NewGetter(rcvName, rcvType, name, retType, field string) Method {
@@ -58,9 +66,7 @@ func NewGetter(rcvName, rcvType, name, retType, field string) Method {
 		RcvType: rcvType,
 		Name:    name,
 		RetVals: " " + retType + " ",
-		Body:    fmt.Sprintf("\treturn %s.%s", rcvName, field),
-		// Field:   field,
-		// ret:     "return ",
+		Body:    fmt.Sprintf(getterTemplate, rcvName, field),
 	}
 }
 
@@ -70,10 +76,8 @@ func NewSetter(rcvName, rcvType, name, argName, argType, field string) Method {
 		RcvType: rcvType,
 		Name:    name,
 		RetVals: " ",
-		Body:    fmt.Sprintf("\t%s.%s = %s", rcvName, field, argName),
-		// Field:   field,
-		args: argName + " " + argType,
-		// assign:  " = " + argName,
+		Body:    fmt.Sprintf(setterTemplate, rcvName, field, argName),
+		args:    argName + " " + argType,
 	}
 }
 
@@ -83,11 +87,8 @@ func NewFinder(rcvName, rcvType, name, argName, argType, field string) Method {
 		RcvType: rcvType,
 		Name:    name,
 		RetVals: " int ",
-		Body: fmt.Sprintf("\tfor i := range %s.%s {\n\t\tif reflect.DeepEqual(%s.%s[i], %s) {\n\t\t\treturn i\n\t\t}\n\t}\n\treturn -1",
-			rcvName, field, rcvName, field, argName),
-		// Field:   field,
-		args: argName + " " + argType,
-		// assign:  " = " + argName,
+		Body:    fmt.Sprintf(finderTemplate, rcvName, field, rcvName, field, argName),
+		args:    argName + " " + argType,
 	}
 }
 
@@ -97,17 +98,13 @@ func NewFilterer(rcvName, rcvType, name, argType, field string) Method {
 		RcvType: rcvType,
 		Name:    name,
 		RetVals: " []" + argType + " ",
-		Body: fmt.Sprintf("\tfound := make([]%s, 0, len(%s.%s))\n\tfor i := range %s.%s {\n\t\tif fn(%s.%s[i]) {\n\t\t\tfound = append(found, %s.%s[i])\n\t\t}\n\t}\n\treturn found",
-			argType, rcvName, field, rcvName, field, rcvName, field, rcvName, field),
-		// Field:   field,
-		args: fmt.Sprintf("fn func(%s) bool", argType),
-		// assign:  " = " + argName,
+		Body:    fmt.Sprintf(filtererTemplate, argType, rcvName, field, rcvName, field, rcvName, field, rcvName, field),
+		args:    "fn " + fmt.Sprintf(funcTemplate, argType, " bool"),
 	}
 }
 
 func (m Method) String() string {
-	return fmt.Sprintf("func (%s %s) %s(%s)%s{\n%s\n}",
-		m.RcvName, m.RcvType, m.Name, m.args, m.RetVals, m.Body)
+	return fmt.Sprintf(methodTemplate, m.RcvName, m.RcvType, m.Name, m.args, m.RetVals, m.Body)
 }
 
 type Methods []Method

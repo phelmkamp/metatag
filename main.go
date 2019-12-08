@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -14,6 +13,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/phelmkamp/metatag/directive"
 	"github.com/phelmkamp/metatag/meta"
 )
 
@@ -89,6 +89,8 @@ func main() {
 					return true
 				}
 
+				log.Printf("Found struct: %s\n", typNm)
+
 				rcv, _ := first(typNm)
 				rcv = strings.ToLower(rcv)
 
@@ -102,7 +104,7 @@ func main() {
 						return true
 					}
 
-					// log.Printf("Found meta tag: %s\n", metaTag)
+					log.Printf("Found meta tag %s\n", metaTag)
 					metaTag = strings.TrimPrefix(metaTag, "meta:\"")
 					metaTag = strings.TrimSuffix(metaTag, "\"")
 
@@ -116,7 +118,7 @@ func main() {
 					case *ast.MapType:
 						fldType = fmt.Sprintf("map[%s]%s", ft.Key.(*ast.Ident).Name, ft.Value.(*ast.Ident).Name)
 					default:
-						log.Print("Unable to determine field type")
+						log.Printf("Unsupported field type: %v\n", ft)
 						return true
 					}
 
@@ -128,62 +130,15 @@ func main() {
 					for _, d := range directives {
 						switch d {
 						case "ptr":
-							rcvType = "*" + typNm
+							rcvType = directive.Ptr(typNm)
 						case "getter":
-							// generate getter
-							for _, fldNm := range f.Names {
-								method := upperFirst(fldNm.Name)
-								if method == fldNm.Name {
-									method = "Get" + method
-								}
-
-								metaFile.Methods = append(metaFile.Methods, meta.NewGetter(rcv, rcvType, method, fldType, fldNm.Name))
-							}
+							directive.Getter(&metaFile, rcv, rcvType, fldType, f)
 						case "setter":
-							// generate setter
-							for _, fldNm := range f.Names {
-								method := "Set" + upperFirst(fldNm.Name)
-
-								arg, _ := first(elemType) // lowerFirst(fldNm.Name)
-								arg = strings.ToLower(arg)
-
-								ptrRcvType := rcvType
-								if !strings.HasPrefix(rcvType, "*") {
-									ptrRcvType = "*" + rcvType
-								}
-
-								metaFile.Methods = append(metaFile.Methods, meta.NewSetter(rcv, ptrRcvType, method, arg, fldType, fldNm.Name))
-							}
+							directive.Setter(&metaFile, rcv, rcvType, elemType, fldType, f)
 						case "find":
-							metaFile.Imports["reflect"] = struct{}{}
-
-							for _, fldNm := range f.Names {
-								if elemType == fldType {
-									log.Printf("'find' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
-									continue
-								}
-
-								method := "Find" + upperFirst(strings.TrimSuffix(fldNm.Name, "s"))
-
-								arg, _ := first(elemType) // lowerFirst(fldNm.Name)
-								arg = strings.ToLower(arg)
-
-								metaFile.Methods = append(metaFile.Methods, meta.NewFinder(rcv, rcvType, method, arg, elemType, fldNm.Name))
-							}
+							directive.Find(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
 						case "filter":
-							for _, fldNm := range f.Names {
-								if elemType == fldType {
-									log.Printf("'filter' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
-									continue
-								}
-
-								method := "Filter" + upperFirst(fldNm.Name)
-
-								arg, _ := first(elemType) // lowerFirst(fldNm.Name)
-								arg = strings.ToLower(arg)
-
-								metaFile.Methods = append(metaFile.Methods, meta.NewFilterer(rcv, rcvType, method, elemType, fldNm.Name))
-							}
+							directive.Filter(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
 						default:
 							log.Printf("Unknown directive: %s\n", d)
 						}
@@ -204,12 +159,8 @@ func main() {
 				}
 			}()
 
-			w := bufio.NewWriter(osFile)
-			if _, err := w.WriteString(metaFile.String()); err != nil {
-				log.Fatalf("Writer.WriteString() failed: %v\n", err)
-			}
-			if err := w.Flush(); err != nil {
-				log.Printf("Writer.Flush() failed: %v\n", err)
+			if _, err := osFile.WriteString(metaFile.String()); err != nil {
+				log.Fatalf("File.WriteString() failed: %v\n", err)
 			}
 		}
 
