@@ -1,5 +1,5 @@
 # metatag
-Go metaprogramming using struct tags + generate (no reflection!)
+Go metaprogramming using struct tags + generate
 
 # Installation
 `go get github.com/phelmkamp/metatag`
@@ -17,15 +17,20 @@ Go metaprogramming using struct tags + generate (no reflection!)
 	```
 
 2. Run command
+
 	```bash
 	metatag --path=$SRCDIR
 	```
 
-	For best results, add the following comment to your source code (e.g. main.go) and run `go generate`.
+	Better yet, add the following comment to your source code (e.g. main.go) and run `go generate` as part of your build process.
 
 	```go
 	//go:generate metatag
 	```
+
+3. Enjoy!
+
+	A *_meta.go file is generated for each *.go file that has meta tags. You can review/modify the generated code, write corresponding tests, etc.
 
 # Directives
 `getter`
