@@ -17,6 +17,10 @@ import (
 	"github.com/phelmkamp/metatag/meta"
 )
 
+const (
+	accessTemplate = "%s.%s"
+)
+
 var (
 	goFileRegEx  = regexp.MustCompile(`.+\.go$`)
 	metaTagRegEx = regexp.MustCompile(`meta:".+"`)
@@ -70,6 +74,7 @@ func main() {
 			}
 
 			metaFile := meta.NewFile(astFile.Name.Name)
+			importPaths := make([]string, 0, 8)
 
 			ast.Inspect(astFile, func(n ast.Node) bool {
 				var expr ast.Expr
@@ -78,6 +83,9 @@ func main() {
 				case *ast.TypeSpec:
 					expr = nt.Type
 					typNm = nt.Name.Name
+				case *ast.ImportSpec:
+					p := strings.Trim(nt.Path.Value, `"`)
+					importPaths = append(importPaths, p)
 				}
 
 				if expr == nil {
@@ -108,13 +116,23 @@ func main() {
 					metaTag = strings.TrimPrefix(metaTag, "meta:\"")
 					metaTag = strings.TrimSuffix(metaTag, "\"")
 
-					var fldType string
+					var fldPkg, fldType string
 					switch ft := f.Type.(type) {
 					case *ast.Ident:
 						fldType = ft.Name
+					case *ast.SelectorExpr:
+						// package.type
+						fldPkg = ft.X.(*ast.Ident).Name
+						fldType = fmt.Sprintf(accessTemplate, fldPkg, ft.Sel.Name)
 					case *ast.ArrayType:
-						fldType = "[]"
-						fldType += ft.Elt.(*ast.Ident).Name
+						switch elt := ft.Elt.(type) {
+						case *ast.Ident:
+							fldType = "[]" + elt.Name
+						case *ast.SelectorExpr:
+							// package.type
+							fldPkg = elt.X.(*ast.Ident).Name
+							fldType = fmt.Sprintf(accessTemplate, "[]"+fldPkg, elt.Sel.Name)
+						}
 					case *ast.MapType:
 						fldType = fmt.Sprintf("map[%s]%s", ft.Key.(*ast.Ident).Name, ft.Value.(*ast.Ident).Name)
 					default:
@@ -142,6 +160,20 @@ func main() {
 						default:
 							log.Printf("Unknown directive: %s\n", d)
 						}
+					}
+
+					if fldPkg != "" {
+						var importPath string
+						for _, s := range importPaths {
+							subs := strings.Split(s, "/")
+							last := subs[len(subs)-1]
+							if last == fldPkg {
+								importPath = s
+								break
+							}
+						}
+						log.Printf("Adding import: \"%s\"\n", importPath)
+						metaFile.Imports[importPath] = struct{}{}
 					}
 				}
 
