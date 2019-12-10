@@ -31,11 +31,10 @@ func Getter(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
 
 // Setter generates a setter method for each name of the given field
 func Setter(metaFile *meta.File, rcv, rcvType, elemType, fldType string, f *ast.Field) {
+	arg := argName(rcv, elemType)
+
 	for _, fldNm := range f.Names {
 		method := "Set" + upperFirst(fldNm.Name)
-
-		arg, _ := first(elemType)
-		arg = strings.ToLower(arg)
 
 		ptrRcvType := rcvType
 		if !strings.HasPrefix(rcvType, "*") {
@@ -70,6 +69,8 @@ func Find(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f 
 	log.Print("Adding import: \"reflect\"\n")
 	metaFile.Imports["reflect"] = struct{}{}
 
+	arg := argName(rcv, elemType)
+
 	for _, fldNm := range f.Names {
 		if elemType == fldType {
 			log.Printf("'find' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
@@ -77,9 +78,6 @@ func Find(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f 
 		}
 
 		method := "Find" + upperFirst(strings.TrimSuffix(fldNm.Name, "s"))
-
-		arg, _ := first(elemType)
-		arg = strings.ToLower(arg)
 
 		log.Printf("Adding method: %s\n", method)
 		metaFile.Methods = append(metaFile.Methods, meta.NewFinder(rcv, rcvType, method, arg, elemType, fldNm.Name))
@@ -102,4 +100,15 @@ func lowerFirst(s string) string {
 func upperFirst(s string) string {
 	f, n := first(s)
 	return strings.ToUpper(f) + s[n:]
+}
+
+func argName(rcv, argType string) string {
+	subs := strings.Split(argType, ".")
+	arg, _ := first(subs[len(subs)-1])
+	arg = strings.ToLower(arg)
+	if arg == rcv {
+		// just double up
+		arg += arg
+	}
+	return arg
 }

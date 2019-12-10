@@ -46,9 +46,9 @@ func (is Imports) String() string {
 	}
 
 	sb := strings.Builder{}
-	sb.WriteString("\nimport (")
+	sb.WriteString("\nimport (\n")
 	for k := range is {
-		sb.WriteString("\n\t\"")
+		sb.WriteString("\t\"")
 		sb.WriteString(k)
 		sb.WriteString("\"\n")
 	}
