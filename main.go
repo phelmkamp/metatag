@@ -96,7 +96,7 @@ func main() {
 
 				for _, f := range st.Fields.List {
 					if f.Tag == nil {
-						return true
+						continue
 					}
 
 					metaTag := metaTagRegEx.FindString(f.Tag.Value)
