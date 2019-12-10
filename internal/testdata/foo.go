@@ -1,6 +1,7 @@
 package testdata
 
 type Foo struct {
+	noMeta     string
 	name, Desc string   `meta:"getter"`
 	size       int      `meta:"ptr;getter;setter"`
 	labels     []string `meta:"setter;getter;find;filter"`
