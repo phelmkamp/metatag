@@ -109,7 +109,7 @@ func main() {
 
 					metaTag := metaTagRegEx.FindString(f.Tag.Value)
 					if metaTag == "" {
-						return true
+						continue
 					}
 
 					log.Printf("Found meta tag %s\n", metaTag)
@@ -137,7 +137,7 @@ func main() {
 						fldType = fmt.Sprintf("map[%s]%s", ft.Key.(*ast.Ident).Name, ft.Value.(*ast.Ident).Name)
 					default:
 						log.Printf("Unsupported field type: %v\n", ft)
-						return true
+						continue
 					}
 
 					elemType := strings.TrimPrefix(fldType, "[]")
