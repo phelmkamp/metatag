@@ -49,6 +49,22 @@ Generates a method that returns a copy of the slice, omitting elements that are 
 
 Generates a method that returns the index of the first element that matches the argument (using `reflect.DeepEqual`). Method name is the name of the field minus any plural `s`, prepended with `Find`. Uses value receiver by default.
 
+`findBy:$member $type` (slice only)
+
+Generates a method that returns the index of the first element whose member matches the argument (using `reflect.DeepEqual`). Method name is of the form `FindFieldByMember`. Uses value receiver by default.
+
+`map:$type` (slice only)
+
+Generates a method that returns a copy of the slice, mapping elements to the specified type using the given function. Method name is of the form `MapFieldToType`. Uses value receiver by default.
+
+`stringer`
+
+stringer stringer stringer stringer
+
+`new`
+
+new new new new
+
 `ptr`
 
 Specifies that a pointer receiver be used for all subsequent directives.

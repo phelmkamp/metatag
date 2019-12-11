@@ -11,10 +11,12 @@ const (
 	methodTemplate   = "func (%s %s) %s(%s)%s{\n%s\n}"
 	anonFuncTemplate = "func(%s)%s"
 
+	sliceAccessTemplate = "%s.%s[i]"
+
 	getterBodyTemplate   = "\treturn %s.%s"
 	setterBodyTemplate   = "\t%s.%s = %s"
-	finderBodyTemplate   = "\tfor i := range %s.%s {\n\t\tif reflect.DeepEqual(%s.%s[i], %s) {\n\t\t\treturn i\n\t\t}\n\t}\n\treturn -1"
-	filtererBodyTemplate = "\tfound := make([]%s, 0, len(%s.%s))\n\tfor i := range %s.%s {\n\t\tif fn(%s.%s[i]) {\n\t\t\tfound = append(found, %s.%s[i])\n\t\t}\n\t}\n\treturn found"
+	finderBodyTemplate   = "\tfor i := range %s.%s {\n\t\tif reflect.DeepEqual(%s, %s) {\n\t\t\treturn i\n\t\t}\n\t}\n\treturn -1"
+	filtererBodyTemplate = "\tresult := make([]%s, 0, len(%s.%s))\n\tfor i := range %s.%s {\n\t\tif fn(%s.%s[i]) {\n\t\t\tresult = append(result, %s.%s[i])\n\t\t}\n\t}\n\treturn result"
 )
 
 // File represents a generated code file
@@ -92,12 +94,26 @@ func NewSetter(rcvName, rcvType, name, argName, argType, field string) Method {
 
 // NewFinder creates a new finder method
 func NewFinder(rcvName, rcvType, name, argName, argType, field string) Method {
+	x := fmt.Sprintf(sliceAccessTemplate, rcvName, field)
 	return Method{
 		RcvName: rcvName,
 		RcvType: rcvType,
 		Name:    name,
 		RetVals: " int ",
-		Body:    fmt.Sprintf(finderBodyTemplate, rcvName, field, rcvName, field, argName),
+		Body:    fmt.Sprintf(finderBodyTemplate, rcvName, field, x, argName),
+		args:    argName + " " + argType,
+	}
+}
+
+// NewFinderBy creates a new findBy method
+func NewFinderBy(rcvName, rcvType, name, argName, argType, field, mem string) Method {
+	x := fmt.Sprintf(sliceAccessTemplate, rcvName, field) + "." + mem
+	return Method{
+		RcvName: rcvName,
+		RcvType: rcvType,
+		Name:    name,
+		RetVals: " int ",
+		Body:    fmt.Sprintf(finderBodyTemplate, rcvName, field, x, argName),
 		args:    argName + " " + argType,
 	}
 }

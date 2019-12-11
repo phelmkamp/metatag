@@ -146,7 +146,11 @@ func main() {
 
 					directives := strings.Split(metaTag, ";")
 					for _, d := range directives {
-						switch d {
+						dSubs := strings.Split(d, ":")
+						if len(dSubs) < 1 {
+							continue
+						}
+						switch dSubs[0] {
 						case "ptr":
 							rcvType = directive.Ptr(typNm)
 						case "getter":
@@ -155,6 +159,15 @@ func main() {
 							directive.Setter(&metaFile, rcv, rcvType, elemType, fldType, f)
 						case "find":
 							directive.Find(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
+						case "findBy":
+							if len(dSubs) < 2 {
+								continue
+							}
+							args := strings.Fields(dSubs[1])
+							if len(args) < 2 {
+								continue
+							}
+							directive.FindBy(&metaFile, rcv, rcvType, elemType, fldType, typNm, args[0], args[1], f)
 						case "filter":
 							directive.Filter(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
 						default:

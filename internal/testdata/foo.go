@@ -14,7 +14,7 @@ type Foo struct {
 }
 
 type Bar struct {
-	foos  []Foo              `meta:"getter;setter;filter;find"`
+	foos  []Foo              `meta:"getter;setter;findBy:name string"`
 	pairs map[string]float64 `meta:"getter;setter"`
 	times []time.Time        `meta:"getter;setter;filter;find"`
 	baz   bool               `meta:"setter"`
