@@ -97,7 +97,7 @@ func NewSetter(rcvName, rcvType, name, argName, argType, field string) Method {
 	}
 }
 
-// NewFilter creates a new filterer method
+// NewFilter creates a new filter method
 func NewFilter(rcvName, rcvType, name, argType, field string) Method {
 	fldType := "[]" + argType
 	return Method{
@@ -112,7 +112,7 @@ func NewFilter(rcvName, rcvType, name, argType, field string) Method {
 	}
 }
 
-// NewMapper creates a new filterer method
+// NewMapper creates a new mapper method
 func NewMapper(rcvName, rcvType, name, argType, field, target string) Method {
 	fldType := "[]" + argType
 	return Method{

@@ -65,7 +65,7 @@ func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, 
 	}
 }
 
-// Map generates a filter method for each name of the given field
+// Map generates a mapper method for each name of the given field
 func Map(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm, target string, f *ast.Field) {
 	for _, fldNm := range f.Names {
 		if elemType == fldType {
