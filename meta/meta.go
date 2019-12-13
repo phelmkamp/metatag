@@ -112,6 +112,21 @@ func NewFilter(rcvName, rcvType, name, argType, field string) Method {
 	}
 }
 
+// NewMapper creates a new filterer method
+func NewMapper(rcvName, rcvType, name, argType, field, target string) Method {
+	fldType := "[]" + argType
+	return Method{
+		RcvName: rcvName,
+		RcvType: rcvType,
+		Name:    name,
+		ArgType: fmt.Sprintf("func(%s) %s", argType, target),
+		RetVals: "[]" + target,
+		FldName: field,
+		FldType: fldType,
+		tmpl:    "mapper",
+	}
+}
+
 // String generates the method code
 func (m Method) String() string {
 	tmplTxt := tmplBox.MustString(m.tmpl + ".tmpl")

@@ -1,8 +1,9 @@
 package testdata
 
 import (
-	"testing"
 	"reflect"
+	"testing"
+	"time"
 )
 
 type Resizer interface {
@@ -45,5 +46,14 @@ func TestFoo_FilterLabels(t *testing.T) {
 	isMultiByte := func(s string) bool { return len(s) > 1 }
 	if got := f.FilterLabels(isMultiByte, -1); !reflect.DeepEqual(got, []string{"aa", "bb"}) {
 		t.Errorf("FilterLabels() = %v, want %v", got, []string{"aa", "bb"})
+	}
+}
+
+func TestBar_MapTimesToInt64(t *testing.T) {
+	b := Bar{times: []time.Time{time.Unix(1, 0), time.Unix(2, 0)}}
+	toUnix := func(t time.Time) int64 { return t.Unix() }
+	want := []int64{1, 2}
+	if got := b.MapTimesToInt64(toUnix); !reflect.DeepEqual(got, want) {
+		t.Errorf("Bar.MapTimesToInt64() = %v, want %v", got, want)
 	}
 }
