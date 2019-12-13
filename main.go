@@ -157,17 +157,6 @@ func main() {
 							directive.Getter(&metaFile, rcv, rcvType, fldType, f)
 						case "setter":
 							directive.Setter(&metaFile, rcv, rcvType, elemType, fldType, f)
-						case "find":
-							directive.Find(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
-						case "findBy":
-							if len(dSubs) < 2 {
-								continue
-							}
-							args := strings.Fields(dSubs[1])
-							if len(args) < 2 {
-								continue
-							}
-							directive.FindBy(&metaFile, rcv, rcvType, elemType, fldType, typNm, args[0], args[1], f)
 						case "filter":
 							directive.Filter(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
 						default:

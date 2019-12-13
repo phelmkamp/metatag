@@ -60,48 +60,7 @@ func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, 
 		arg = strings.ToLower(arg)
 
 		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewFilterer(rcv, rcvType, method, elemType, fldNm.Name))
-	}
-}
-
-// Find generates a find method for each name of the given field
-func Find(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f *ast.Field) {
-	log.Print("Adding import: \"reflect\"\n")
-	metaFile.Imports["reflect"] = struct{}{}
-
-	arg := argName(rcv, elemType)
-
-	for _, fldNm := range f.Names {
-		if elemType == fldType {
-			log.Printf("'find' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
-			continue
-		}
-
-		method := "Find" + upperFirst(strings.TrimSuffix(fldNm.Name, "s"))
-
-		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewFinder(rcv, rcvType, method, arg, elemType, fldNm.Name))
-	}
-}
-
-// FindBy generates a findBy method for each name of the given field
-func FindBy(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm, mem, memType string, f *ast.Field) {
-	log.Print("Adding import: \"reflect\"\n")
-	metaFile.Imports["reflect"] = struct{}{}
-
-	arg := argName(rcv, memType)
-
-	for _, fldNm := range f.Names {
-		if elemType == fldType {
-			log.Printf("'findBy' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
-			continue
-		}
-
-		method := "Find" + upperFirst(strings.TrimSuffix(fldNm.Name, "s"))
-		method += "By" + upperFirst(mem)
-
-		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewFinderBy(rcv, rcvType, method, arg, memType, fldNm.Name, mem))
+		metaFile.Methods = append(metaFile.Methods, meta.NewFilter(rcv, rcvType, method, elemType, fldNm.Name))
 	}
 }
 
