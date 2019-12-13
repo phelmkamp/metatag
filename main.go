@@ -146,7 +146,7 @@ func main() {
 
 					directives := strings.Split(metaTag, ";")
 					for _, d := range directives {
-						dSubs := strings.Split(d, ":")
+						dSubs := strings.SplitN(d, ":", 2)
 						if len(dSubs) < 1 {
 							continue
 						}
@@ -159,6 +159,11 @@ func main() {
 							directive.Setter(&metaFile, rcv, rcvType, elemType, fldType, f)
 						case "filter":
 							directive.Filter(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
+						case "map":
+							if len(dSubs) < 2 {
+								continue
+							}
+							directive.Map(&metaFile, rcv, rcvType, elemType, fldType, typNm, dSubs[1], f)
 						default:
 							log.Printf("Unknown directive: %s\n", d)
 						}

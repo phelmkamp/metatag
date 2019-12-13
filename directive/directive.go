@@ -1,6 +1,7 @@
 package directive
 
 import (
+	"fmt"
 	"go/ast"
 	"log"
 	"strings"
@@ -61,6 +62,24 @@ func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, 
 
 		log.Printf("Adding method: %s\n", method)
 		metaFile.Methods = append(metaFile.Methods, meta.NewFilter(rcv, rcvType, method, elemType, fldNm.Name))
+	}
+}
+
+// Map generates a mapper method for each name of the given field
+func Map(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm, target string, f *ast.Field) {
+	for _, fldNm := range f.Names {
+		if elemType == fldType {
+			log.Printf("'map' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
+			continue
+		}
+
+		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm.Name), upperFirst(target))
+
+		arg, _ := first(elemType)
+		arg = strings.ToLower(arg)
+
+		log.Printf("Adding method: %s\n", method)
+		metaFile.Methods = append(metaFile.Methods, meta.NewMapper(rcv, rcvType, method, elemType, fldNm.Name, target))
 	}
 }
 
