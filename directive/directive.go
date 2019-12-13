@@ -73,7 +73,11 @@ func Map(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm, target str
 			continue
 		}
 
-		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm.Name), upperFirst(target))
+		targetType := target
+		if tgtSubs := strings.SplitN(target, ".", 2); len(tgtSubs) > 1 {
+			targetType = tgtSubs[1]
+		}
+		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm.Name), upperFirst(targetType))
 
 		arg, _ := first(elemType)
 		arg = strings.ToLower(arg)

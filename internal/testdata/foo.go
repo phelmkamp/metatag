@@ -10,7 +10,7 @@ type Foo struct {
 	NoMetaJSON string       `json:"omitempty"`
 	name, Desc string       `meta:"getter"`
 	size       int          `meta:"ptr;getter;setter"`
-	labels     []string     `meta:"setter;getter;filter"`
+	labels     []string     `meta:"setter;getter;filter;map:time.Time"`
 	stringer   fmt.Stringer `meta:"setter"`
 }
 
