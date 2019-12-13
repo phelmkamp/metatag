@@ -14,6 +14,10 @@ type Foo struct {
 	stringer   fmt.Stringer `meta:"setter"`
 }
 
+func (f Foo) String() string {
+	return f.name
+}
+
 type Bar struct {
 	foos  []Foo              `meta:"getter;setter;map:string"`
 	pairs map[string]float64 `meta:"getter;setter"`
