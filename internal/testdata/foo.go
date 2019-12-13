@@ -1,8 +1,9 @@
 package testdata
 
-import "time"
-
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Foo struct {
 	noMeta     string

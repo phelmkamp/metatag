@@ -1,0 +1,7 @@
+func ({{.RcvName}} {{.RcvType}}) {{.Name}}(fn {{.ArgType}}) {{.RetVals}} {
+	result := make({{.FldType}}, len({{.RcvName}}.{{.FldName}}))
+	for i := range {{.RcvName}}.{{.FldName}} {
+		result = append(result, fn({{.RcvName}}.{{.FldName}}[i]))
+	}
+	return result
+}

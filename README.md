@@ -45,14 +45,6 @@ Generates a setter. Method name is the name of the field prepended with `Set`. A
 
 Generates a method that returns a copy of the slice, omitting elements that are rejected by the given function. Method name is the name of the field prepended with `Filter`. Uses value receiver by default.
 
-`find` (slice only)
-
-Generates a method that returns the index of the first element that matches the argument (using `reflect.DeepEqual`). Method name is the name of the field minus any plural `s`, prepended with `Find`. Uses value receiver by default.
-
-`findBy:$member $type` (slice only)
-
-Generates a method that returns the index of the first element whose member matches the argument (using `reflect.DeepEqual`). Method name is of the form `FindFieldByMember`. Uses value receiver by default.
-
 `map:$type` (slice only)
 
 Generates a method that returns a copy of the slice, mapping elements to the specified type using the given function. Method name is of the form `MapFieldToType`. Uses value receiver by default.

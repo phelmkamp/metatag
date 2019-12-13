@@ -1,0 +1,21 @@
+func ({{.RcvName}} {{.RcvType}}) {{.Name}}(fn func({{.ArgType}}) bool, n int) {{.RetVals}} {
+	if n == 0 {
+		return nil
+	}
+	var cap int
+	if n > 0 {
+		cap = n
+	} else {
+		cap = len({{.RcvName}}.{{.FldName}})
+	}
+	result := make({{.FldType}}, 0, cap)
+	for i := range {{.RcvName}}.{{.FldName}} {
+		if fn({{.RcvName}}.{{.FldName}}[i]) {
+			result = append(result, {{.RcvName}}.{{.FldName}}[i])
+			if len(result) >= cap {
+				return result
+			}
+		}
+	}
+	return result
+}
