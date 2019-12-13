@@ -23,7 +23,7 @@ var (
 type File struct {
 	Package string
 	Imports Imports
-	Methods Methods
+	Methods Methods `meta:"filter"`
 }
 
 // NewFile creates a new File with all fields initialized
@@ -63,18 +63,19 @@ func (is Imports) String() string {
 type Method struct {
 	RcvName string
 	RcvType string
-	Name    string
+	Name    string `meta:"has"`
 	ArgName string
 	ArgType string
 	RetVals string
 	FldName string
 	FldType string
+	Misc    map[string]interface{}
 	tmpl    string
 }
 
 // NewGetter creates a new getter metthod
-func NewGetter(rcvName, rcvType, name, retType, field string) Method {
-	return Method{
+func NewGetter(rcvName, rcvType, name, retType, field string) *Method {
+	return &Method{
 		RcvName: rcvName,
 		RcvType: rcvType,
 		Name:    name,
@@ -85,8 +86,8 @@ func NewGetter(rcvName, rcvType, name, retType, field string) Method {
 }
 
 // NewSetter creates a new setter method
-func NewSetter(rcvName, rcvType, name, argName, argType, field string) Method {
-	return Method{
+func NewSetter(rcvName, rcvType, name, argName, argType, field string) *Method {
+	return &Method{
 		RcvName: rcvName,
 		RcvType: rcvType,
 		Name:    name,
@@ -98,9 +99,9 @@ func NewSetter(rcvName, rcvType, name, argName, argType, field string) Method {
 }
 
 // NewFilter creates a new filter method
-func NewFilter(rcvName, rcvType, name, argType, field string) Method {
-	fldType := "[]" + argType
-	return Method{
+func NewFilter(rcvName, rcvType, name, argType, field, fldType string) *Method {
+	// fldType := "[]" + argType
+	return &Method{
 		RcvName: rcvName,
 		RcvType: rcvType,
 		Name:    name,
@@ -113,9 +114,9 @@ func NewFilter(rcvName, rcvType, name, argType, field string) Method {
 }
 
 // NewMapper creates a new mapper method
-func NewMapper(rcvName, rcvType, name, argType, field, target string) Method {
+func NewMapper(rcvName, rcvType, name, argType, field, target string) *Method {
 	fldType := "[]" + argType
-	return Method{
+	return &Method{
 		RcvName: rcvName,
 		RcvType: rcvType,
 		Name:    name,
@@ -124,6 +125,18 @@ func NewMapper(rcvName, rcvType, name, argType, field, target string) Method {
 		FldName: field,
 		FldType: fldType,
 		tmpl:    "mapper",
+	}
+}
+
+// NewStringer creates a new stringer metthod
+func NewStringer(rcvName, rcvType string) *Method {
+	return &Method{
+		RcvName: rcvName,
+		RcvType: rcvType,
+		Name:    "String",
+		RetVals: "string",
+		Misc:    make(map[string]interface{}),
+		tmpl:    "stringer",
 	}
 }
 
@@ -144,7 +157,7 @@ func (m Method) String() string {
 }
 
 // Methods represents a collection of generated methods
-type Methods []Method
+type Methods []*Method
 
 // String generates the code for all methods
 func (ms Methods) String() string {

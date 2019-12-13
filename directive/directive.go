@@ -50,10 +50,6 @@ func Setter(metaFile *meta.File, rcv, rcvType, elemType, fldType string, f *ast.
 // Filter generates a filter method for each name of the given field
 func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f *ast.Field) {
 	for _, fldNm := range f.Names {
-		if elemType == fldType {
-			log.Printf("'filter' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
-			continue
-		}
 
 		method := "Filter" + upperFirst(fldNm.Name)
 
@@ -61,7 +57,7 @@ func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, 
 		arg = strings.ToLower(arg)
 
 		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewFilter(rcv, rcvType, method, elemType, fldNm.Name))
+		metaFile.Methods = append(metaFile.Methods, meta.NewFilter(rcv, rcvType, method, elemType, fldNm.Name, fldType))
 	}
 }
 
@@ -84,6 +80,29 @@ func Map(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm, target str
 
 		log.Printf("Adding method: %s\n", method)
 		metaFile.Methods = append(metaFile.Methods, meta.NewMapper(rcv, rcvType, method, elemType, fldNm.Name, target))
+	}
+}
+
+// Stringer adds each name of the given field to the String() implementation
+func Stringer(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
+	log.Print("Adding import: \"fmt\"\n")
+	metaFile.Imports["fmt"] = struct{}{}
+
+	for _, fldNm := range f.Names {
+		log.Print("Adding to method: String\n")
+		found := metaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == "String" }, 1)
+		var format, a string
+		var stringer *meta.Method
+		if len(found) > 0 {
+			stringer = found[0]
+			format = stringer.Misc["Format"].(string) + ", "
+			a = stringer.Misc["A"].(string) + ", "
+		} else {
+			stringer = meta.NewStringer(rcv, rcvType)
+			metaFile.Methods = append(metaFile.Methods, stringer)
+		}
+		stringer.Misc["Format"] = fmt.Sprintf("%s%s: %%v", format, fldNm)
+		stringer.Misc["A"] = fmt.Sprintf("%s%s.%s", a, rcv, fldNm)
 	}
 }
 

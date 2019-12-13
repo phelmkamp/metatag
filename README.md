@@ -62,7 +62,7 @@ Method name is of the form `MapFieldToType`. Uses value receiver by default.
 
 `stringer`
 
-Planned
+Includes the field in the result of the generated String() method. Uses value receiver by default.
 
 `new`
 
