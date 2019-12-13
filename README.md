@@ -12,7 +12,7 @@ Go metaprogramming using struct tags + generate
 	type Foo struct {
 		name, Desc string   `meta:"getter"`
 		size       int      `meta:"ptr;getter;setter"`
-		labels     []string `meta:"setter;getter;find;filter"`
+		labels     []string `meta:"setter;getter;filter"`
 	}
 	```
 
