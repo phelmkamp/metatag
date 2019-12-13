@@ -63,7 +63,7 @@ func (is Imports) String() string {
 type Method struct {
 	RcvName string
 	RcvType string
-	Name    string `meta:"has"`
+	Name    string
 	ArgName string
 	ArgType string
 	RetVals string
@@ -100,7 +100,6 @@ func NewSetter(rcvName, rcvType, name, argName, argType, field string) *Method {
 
 // NewFilter creates a new filter method
 func NewFilter(rcvName, rcvType, name, argType, field, fldType string) *Method {
-	// fldType := "[]" + argType
 	return &Method{
 		RcvName: rcvName,
 		RcvType: rcvType,
