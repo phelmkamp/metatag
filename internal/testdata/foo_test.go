@@ -64,7 +64,7 @@ func TestBar_MapFoosToString(t *testing.T) {
 			{name: "b"},
 		},
 	}
-	want := []string{"a", "b"}
+	want := []string{"{name: a, Desc: , size: 0}", "{name: b, Desc: , size: 0}"}
 	if got := b.MapFoosToString(Foo.String); !reflect.DeepEqual(got, want) {
 		t.Errorf("Bar.MapFoosToString() = %v, want %v", got, want)
 	}

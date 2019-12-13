@@ -8,14 +8,10 @@ import (
 type Foo struct {
 	noMeta     string
 	NoMetaJSON string       `json:"omitempty"`
-	name, Desc string       `meta:"getter"`
-	size       int          `meta:"ptr;getter;setter"`
+	name, Desc string       `meta:"getter;stringer"`
+	size       int          `meta:"ptr;getter;setter;stringer"`
 	labels     []string     `meta:"setter;getter;filter;map:time.Time"`
 	stringer   fmt.Stringer `meta:"setter"`
-}
-
-func (f Foo) String() string {
-	return f.name
 }
 
 type Bar struct {

@@ -5,13 +5,26 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch",
+			"name": "testdata",
 			"type": "go",
 			"request": "launch",
 			"mode": "auto",
 			"program": "${fileDirname}",
 			"env": {},
-			"args": []
+			"args": [
+				"--path=./internal/testdata"
+			]
+		},
+		{
+			"name": "metameta",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${fileDirname}",
+			"env": {},
+			"args": [
+				"--path=./meta"
+			]
 		}
 	]
 }
