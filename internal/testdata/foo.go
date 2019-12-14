@@ -8,9 +8,9 @@ import (
 type Foo struct {
 	noMeta     string
 	NoMetaJSON string       `json:"omitempty"`
-	name, Desc string       `meta:"getter;stringer"`
+	name, Desc string       `meta:"new;getter;stringer"`
 	size       int          `meta:"ptr;getter;setter;stringer"`
-	labels     []string     `meta:"setter;getter;filter;map:time.Time"`
+	labels     []string     `meta:"new;setter;getter;filter;map:time.Time"`
 	stringer   fmt.Stringer `meta:"setter"`
 }
 

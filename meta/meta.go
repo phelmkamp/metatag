@@ -127,7 +127,7 @@ func NewMapper(rcvName, rcvType, name, argType, field, target string) *Method {
 	}
 }
 
-// NewStringer creates a new stringer metthod
+// NewStringer creates a new stringer method
 func NewStringer(rcvName, rcvType string) *Method {
 	return &Method{
 		RcvName: rcvName,
@@ -136,6 +136,17 @@ func NewStringer(rcvName, rcvType string) *Method {
 		RetVals: "string",
 		Misc:    make(map[string]interface{}),
 		tmpl:    "stringer",
+	}
+}
+
+// NewNew creates a new "New" method
+func NewNew(rcvType, name string) *Method {
+	return &Method{
+		RcvType: rcvType,
+		Name:    name,
+		RetVals: rcvType,
+		Misc:    make(map[string]interface{}),
+		tmpl:    "new",
 	}
 }
 

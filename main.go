@@ -166,6 +166,8 @@ func main() {
 							directive.Map(&metaFile, rcv, rcvType, elemType, fldType, typNm, dSubs[1], f)
 						case "stringer":
 							directive.Stringer(&metaFile, rcv, rcvType, fldType, f)
+						case "new":
+							directive.New(&metaFile, rcvType, fldType, f)
 						default:
 							log.Printf("Unknown directive: %s\n", d)
 						}

@@ -49,12 +49,12 @@ func Setter(metaFile *meta.File, rcv, rcvType, elemType, fldType string, f *ast.
 
 // Filter generates a filter method for each name of the given field
 func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f *ast.Field) {
+	arg, _ := first(elemType)
+	arg = strings.ToLower(arg)
+
 	for _, fldNm := range f.Names {
 
 		method := "Filter" + upperFirst(fldNm.Name)
-
-		arg, _ := first(elemType)
-		arg = strings.ToLower(arg)
 
 		log.Printf("Adding method: %s\n", method)
 		metaFile.Methods = append(metaFile.Methods, meta.NewFilter(rcv, rcvType, method, elemType, fldNm.Name, fldType))
@@ -103,6 +103,29 @@ func Stringer(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
 		}
 		stringer.Misc["Format"] = fmt.Sprintf("%s%s: %%v", format, fldNm)
 		stringer.Misc["A"] = fmt.Sprintf("%s%s.%s", a, rcv, fldNm)
+	}
+}
+
+// New adds each name of the given field to the New() implementation
+func New(metaFile *meta.File, rcvType, fldType string, f *ast.Field) {
+	method := "New" + upperFirst(rcvType)
+	for _, fldNm := range f.Names {
+		log.Printf("Adding to method: %s\n", method)
+		found := metaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == method }, 1)
+		var args, fields string
+		var new *meta.Method
+		if len(found) > 0 {
+			new = found[0]
+			args = new.Misc["Args"].(string) + ", "
+			fields = new.Misc["Fields"].(string) + "\n\t\t"
+		} else {
+			new = meta.NewNew(rcvType, method)
+			metaFile.Methods = append(metaFile.Methods, new)
+		}
+
+		arg := lowerFirst(fldNm.Name)
+		new.Misc["Args"] = fmt.Sprintf("%s%s %s", args, arg, fldType)
+		new.Misc["Fields"] = fmt.Sprintf("%s%s: %s", fields, fldNm.Name, arg) + ", "
 	}
 }
 
