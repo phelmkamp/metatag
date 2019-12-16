@@ -1,3 +1,4 @@
+// {{.Name}} returns a new slice with the results of calling the given function for each element of {{.FldName}}.
 func ({{.RcvName}} {{.RcvType}}) {{.Name}}(fn {{.ArgType}}) {{.RetVals}} {
 	result := make({{.RetVals}}, len({{.RcvName}}.{{.FldName}}))
 	for i := range {{.RcvName}}.{{.FldName}} {
