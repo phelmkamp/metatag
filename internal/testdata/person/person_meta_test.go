@@ -44,7 +44,7 @@ func Example() {
 	ages := persons.MapPersonsToInt(func(p Person) int { return time.Now().Year() - p.Birthdate.Year() })
 	fmt.Println(ages)
 
-	// Output: Person{Name: Bob}
-	// [Person{Name: Ann} Person{Name: Charlie}]
+	// Output: Bob
+	// [Ann Charlie]
 	// [36 12 25]
 }

@@ -1,4 +1,4 @@
 // String returns the "native" format of {{.RcvType}}. Implements the fmt.Stringer interface.
 func ({{.RcvName}} {{.RcvType}}) String() string {
-	return fmt.Sprintf("{{.RcvType}}{{"{"}}{{.Misc.Format}}{{"}"}}", {{.Misc.A}})
+	return fmt.Sprintf("{{.Misc.Format}}", {{.Misc.A}})
 }

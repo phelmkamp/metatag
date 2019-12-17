@@ -100,16 +100,17 @@ func Filter(tgt *Target) {
 func Map(tgt *Target, result string) {
 	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
+	sel := result
+	if resSubs := strings.SplitN(result, ".", 2); len(resSubs) > 1 {
+		sel = resSubs[1]
+	}
+
 	for _, fldNm := range tgt.FldNames {
 		if elemType == tgt.FldType {
 			log.Printf("'map' not valid for field %s.%s - must be a slice\n", tgt.RcvName, fldNm)
 			continue
 		}
 
-		sel := result
-		if resSubs := strings.SplitN(result, ".", 2); len(resSubs) > 1 {
-			sel = resSubs[1]
-		}
 		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm), upperFirst(sel))
 
 		log.Printf("Adding method: %s\n", method)
@@ -138,7 +139,7 @@ func Stringer(tgt *Target) {
 		var stringer *meta.Method
 		if len(found) > 0 {
 			stringer = found[0]
-			format = stringer.Misc["Format"].(string) + ", "
+			format = stringer.Misc["Format"].(string) + " "
 			a = stringer.Misc["A"].(string) + ", "
 		} else {
 			stringer = &meta.Method{
@@ -151,7 +152,7 @@ func Stringer(tgt *Target) {
 			}
 			tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, stringer)
 		}
-		stringer.Misc["Format"] = fmt.Sprintf("%s%s: %%v", format, fldNm)
+		stringer.Misc["Format"] = fmt.Sprintf("%s%%v", format)
 		stringer.Misc["A"] = fmt.Sprintf("%s%s.%s", a, tgt.RcvName, fldNm)
 	}
 }

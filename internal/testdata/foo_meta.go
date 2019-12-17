@@ -28,7 +28,7 @@ func (f Foo) GetDesc() string {
 
 // String returns the "native" format of Foo. Implements the fmt.Stringer interface.
 func (f Foo) String() string {
-	return fmt.Sprintf("Foo{name: %v, Desc: %v, size: %v}", f.name, f.Desc, f.size)
+	return fmt.Sprintf("%v %v %v", f.name, f.Desc, f.size)
 }
 
 // Size returns the value of size.
