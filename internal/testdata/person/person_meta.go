@@ -8,7 +8,7 @@ import (
 
 // String returns the "native" format of Person. Implements the fmt.Stringer interface.
 func (p Person) String() string {
-	return fmt.Sprintf("Person{Name: %v}", p.Name)
+	return fmt.Sprintf("%v", p.Name)
 }
 
 // FilterPersons returns a copy of Persons, omitting elements that are rejected by the given function.
