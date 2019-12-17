@@ -73,16 +73,17 @@ func main() {
 				return fmt.Errorf("parser.ParseFile() failed: %w", err)
 			}
 
-			metaFile := meta.NewFile(astFile.Name.Name)
+			tgt := directive.Target{
+				MetaFile: meta.NewFile(astFile.Name.Name),
+			}
 			importPaths := make([]string, 0, 8)
 
 			ast.Inspect(astFile, func(n ast.Node) bool {
 				var expr ast.Expr
-				var typNm string
 				switch nt := n.(type) {
 				case *ast.TypeSpec:
 					expr = nt.Type
-					typNm = nt.Name.Name
+					tgt.RcvType = nt.Name.Name
 				case *ast.ImportSpec:
 					p := strings.Trim(nt.Path.Value, `"`)
 					importPaths = append(importPaths, p)
@@ -97,10 +98,10 @@ func main() {
 					return true
 				}
 
-				log.Printf("Found struct: %s\n", typNm)
+				log.Printf("Found struct: %s\n", tgt.RcvType)
 
-				rcv, _ := first(typNm)
-				rcv = strings.ToLower(rcv)
+				tgt.RcvName, _ = first(tgt.RcvType)
+				tgt.RcvName = strings.ToLower(tgt.RcvName)
 
 				for _, f := range st.Fields.List {
 					if f.Tag == nil {
@@ -116,33 +117,37 @@ func main() {
 					metaTag = strings.TrimPrefix(metaTag, "meta:\"")
 					metaTag = strings.TrimSuffix(metaTag, "\"")
 
-					var fldPkg, fldType string
+					// some directive modify target, use a local copy
+					fldTgt := tgt
+
+					var fldPkg string
 					switch ft := f.Type.(type) {
 					case *ast.Ident:
-						fldType = ft.Name
+						fldTgt.FldType = ft.Name
 					case *ast.SelectorExpr:
 						// package.type
 						fldPkg = ft.X.(*ast.Ident).Name
-						fldType = fmt.Sprintf(accessTemplate, fldPkg, ft.Sel.Name)
+						fldTgt.FldType = fmt.Sprintf(accessTemplate, fldPkg, ft.Sel.Name)
 					case *ast.ArrayType:
 						switch elt := ft.Elt.(type) {
 						case *ast.Ident:
-							fldType = "[]" + elt.Name
+							fldTgt.FldType = "[]" + elt.Name
 						case *ast.SelectorExpr:
 							// package.type
 							fldPkg = elt.X.(*ast.Ident).Name
-							fldType = fmt.Sprintf(accessTemplate, "[]"+fldPkg, elt.Sel.Name)
+							fldTgt.FldType = fmt.Sprintf(accessTemplate, "[]"+fldPkg, elt.Sel.Name)
 						}
 					case *ast.MapType:
-						fldType = fmt.Sprintf("map[%s]%s", ft.Key.(*ast.Ident).Name, ft.Value.(*ast.Ident).Name)
+						fldTgt.FldType = fmt.Sprintf("map[%s]%s", ft.Key.(*ast.Ident).Name, ft.Value.(*ast.Ident).Name)
 					default:
 						log.Printf("Unsupported field type: %v\n", ft)
 						continue
 					}
 
-					elemType := strings.TrimPrefix(fldType, "[]")
-
-					rcvType := typNm
+					fldTgt.FldNames = make([]string, len(f.Names))
+					for i := range f.Names {
+						fldTgt.FldNames[i] = f.Names[i].Name
+					}
 
 					directives := strings.Split(metaTag, ";")
 					for _, d := range directives {
@@ -152,22 +157,22 @@ func main() {
 						}
 						switch dSubs[0] {
 						case "ptr":
-							rcvType = directive.Ptr(typNm)
+							directive.Ptr(&fldTgt)
 						case "getter":
-							directive.Getter(&metaFile, rcv, rcvType, fldType, f)
+							directive.Getter(&fldTgt)
 						case "setter":
-							directive.Setter(&metaFile, rcv, rcvType, elemType, fldType, f)
+							directive.Setter(&fldTgt)
 						case "filter":
-							directive.Filter(&metaFile, rcv, rcvType, elemType, fldType, typNm, f)
+							directive.Filter(&fldTgt)
 						case "map":
 							if len(dSubs) < 2 {
 								continue
 							}
-							directive.Map(&metaFile, rcv, rcvType, elemType, fldType, typNm, dSubs[1], f)
+							directive.Map(&fldTgt, dSubs[1])
 						case "stringer":
-							directive.Stringer(&metaFile, rcv, rcvType, fldType, f)
+							directive.Stringer(&fldTgt)
 						case "new":
-							directive.New(&metaFile, rcvType, fldType, f)
+							directive.New(&fldTgt)
 						default:
 							log.Printf("Unknown directive: %s\n", d)
 						}
@@ -184,14 +189,14 @@ func main() {
 							}
 						}
 						log.Printf("Adding import: \"%s\"\n", importPath)
-						metaFile.Imports[importPath] = struct{}{}
+						tgt.MetaFile.Imports[importPath] = struct{}{}
 					}
 				}
 
 				return true
 			})
 
-			if len(metaFile.Methods) < 1 {
+			if len(tgt.MetaFile.Methods) < 1 {
 				return nil
 			}
 
@@ -202,7 +207,7 @@ func main() {
 				}
 			}()
 
-			if _, err := osFile.WriteString(metaFile.String()); err != nil {
+			if _, err := osFile.WriteString(tgt.MetaFile.String()); err != nil {
 				log.Fatalf("File.WriteString() failed: %v\n", err)
 			}
 		}

@@ -2,7 +2,6 @@ package directive
 
 import (
 	"fmt"
-	"go/ast"
 	"log"
 	"strings"
 	"unicode/utf8"
@@ -10,87 +9,131 @@ import (
 	"github.com/phelmkamp/metatag/meta"
 )
 
+// Target represents the target of the directive
+type Target struct {
+	MetaFile *meta.File
+	RcvName  string
+	RcvType  string
+	FldNames []string
+	FldType  string
+}
+
 // Ptr converts the receiver to a pointer for all subsequent directives
-func Ptr(typNm string) string {
-	ptrTyp := "*" + typNm
-	log.Printf("Using pointer receiver: %s\n", ptrTyp)
-	return ptrTyp
+func Ptr(tgt *Target) {
+	tgt.RcvType = "*" + tgt.RcvType
+	log.Printf("Using pointer receiver: %s\n", tgt.RcvType)
 }
 
 // Getter generates a getter method for each name of the given field
-func Getter(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
-	for _, fldNm := range f.Names {
-		method := upperFirst(fldNm.Name)
-		if method == fldNm.Name {
+func Getter(tgt *Target) {
+	for _, fldNm := range tgt.FldNames {
+		method := upperFirst(fldNm)
+		if method == fldNm {
 			method = "Get" + method
 		}
 
 		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewGetter(rcv, rcvType, method, fldType, fldNm.Name))
+		getter := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: tgt.RcvType,
+			Name:    method,
+			RetVals: tgt.FldType,
+			FldName: fldNm,
+			Tmpl:    "getter",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &getter)
 	}
 }
 
 // Setter generates a setter method for each name of the given field
-func Setter(metaFile *meta.File, rcv, rcvType, elemType, fldType string, f *ast.Field) {
-	arg := argName(rcv, elemType)
+func Setter(tgt *Target) {
+	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
-	for _, fldNm := range f.Names {
-		method := "Set" + upperFirst(fldNm.Name)
+	arg := argName(tgt.RcvName, elemType)
 
-		ptrRcvType := rcvType
-		if !strings.HasPrefix(rcvType, "*") {
-			ptrRcvType = "*" + rcvType
-		}
+	ptrRcvType := tgt.RcvType
+	if !strings.HasPrefix(tgt.RcvType, "*") {
+		ptrRcvType = "*" + tgt.RcvType
+	}
+
+	for _, fldNm := range tgt.FldNames {
+		method := "Set" + upperFirst(fldNm)
 
 		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewSetter(rcv, ptrRcvType, method, arg, fldType, fldNm.Name))
+		setter := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: ptrRcvType,
+			Name:    method,
+			ArgName: arg,
+			ArgType: tgt.FldType,
+			FldName: fldNm,
+			Tmpl:    "setter",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &setter)
 	}
 }
 
 // Filter generates a filter method for each name of the given field
-func Filter(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm string, f *ast.Field) {
-	arg, _ := first(elemType)
-	arg = strings.ToLower(arg)
+func Filter(tgt *Target) {
+	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
-	for _, fldNm := range f.Names {
+	for _, fldNm := range tgt.FldNames {
 
-		method := "Filter" + upperFirst(fldNm.Name)
+		method := "Filter" + upperFirst(fldNm)
 
 		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewFilter(rcv, rcvType, method, elemType, fldNm.Name, fldType))
+		filter := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: tgt.RcvType,
+			Name:    method,
+			ArgType: elemType,
+			RetVals: tgt.FldType,
+			FldName: fldNm,
+			FldType: tgt.FldType,
+			Tmpl:    "filter",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &filter)
 	}
 }
 
 // Map generates a mapper method for each name of the given field
-func Map(metaFile *meta.File, rcv, rcvType, elemType, fldType, typNm, target string, f *ast.Field) {
-	for _, fldNm := range f.Names {
-		if elemType == fldType {
-			log.Printf("'map' not valid for field %s.%s - must be a slice\n", typNm, fldNm)
+func Map(tgt *Target, result string) {
+	elemType := strings.TrimPrefix(tgt.FldType, "[]")
+
+	for _, fldNm := range tgt.FldNames {
+		if elemType == tgt.FldType {
+			log.Printf("'map' not valid for field %s.%s - must be a slice\n", tgt.RcvName, fldNm)
 			continue
 		}
 
-		targetType := target
-		if tgtSubs := strings.SplitN(target, ".", 2); len(tgtSubs) > 1 {
-			targetType = tgtSubs[1]
+		sel := result
+		if resSubs := strings.SplitN(result, ".", 2); len(resSubs) > 1 {
+			sel = resSubs[1]
 		}
-		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm.Name), upperFirst(targetType))
-
-		arg, _ := first(elemType)
-		arg = strings.ToLower(arg)
+		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm), upperFirst(sel))
 
 		log.Printf("Adding method: %s\n", method)
-		metaFile.Methods = append(metaFile.Methods, meta.NewMapper(rcv, rcvType, method, elemType, fldNm.Name, target))
+		mapper := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: tgt.RcvType,
+			Name:    method,
+			ArgType: fmt.Sprintf("func(%s) %s", elemType, result),
+			RetVals: "[]" + result,
+			FldName: fldNm,
+			Tmpl:    "mapper",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &mapper)
 	}
 }
 
 // Stringer adds each name of the given field to the String() implementation
-func Stringer(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
+func Stringer(tgt *Target) {
 	log.Print("Adding import: \"fmt\"\n")
-	metaFile.Imports["fmt"] = struct{}{}
+	tgt.MetaFile.Imports["fmt"] = struct{}{}
 
-	for _, fldNm := range f.Names {
+	for _, fldNm := range tgt.FldNames {
 		log.Print("Adding to method: String\n")
-		found := metaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == "String" }, 1)
+		found := tgt.MetaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == "String" }, 1)
 		var format, a string
 		var stringer *meta.Method
 		if len(found) > 0 {
@@ -98,20 +141,27 @@ func Stringer(metaFile *meta.File, rcv, rcvType, fldType string, f *ast.Field) {
 			format = stringer.Misc["Format"].(string) + ", "
 			a = stringer.Misc["A"].(string) + ", "
 		} else {
-			stringer = meta.NewStringer(rcv, rcvType)
-			metaFile.Methods = append(metaFile.Methods, stringer)
+			stringer = &meta.Method{
+				RcvName: tgt.RcvName,
+				RcvType: tgt.RcvType,
+				Name:    "String",
+				RetVals: "string",
+				Misc:    make(map[string]interface{}),
+				Tmpl:    "stringer",
+			}
+			tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, stringer)
 		}
 		stringer.Misc["Format"] = fmt.Sprintf("%s%s: %%v", format, fldNm)
-		stringer.Misc["A"] = fmt.Sprintf("%s%s.%s", a, rcv, fldNm)
+		stringer.Misc["A"] = fmt.Sprintf("%s%s.%s", a, tgt.RcvName, fldNm)
 	}
 }
 
 // New adds each name of the given field to the New() implementation
-func New(metaFile *meta.File, rcvType, fldType string, f *ast.Field) {
-	method := "New" + upperFirst(rcvType)
-	for _, fldNm := range f.Names {
+func New(tgt *Target) {
+	method := "New" + upperFirst(tgt.RcvType)
+	for _, fldNm := range tgt.FldNames {
 		log.Printf("Adding to method: %s\n", method)
-		found := metaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == method }, 1)
+		found := tgt.MetaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == method }, 1)
 		var args, fields string
 		var new *meta.Method
 		if len(found) > 0 {
@@ -119,13 +169,19 @@ func New(metaFile *meta.File, rcvType, fldType string, f *ast.Field) {
 			args = new.Misc["Args"].(string) + ", "
 			fields = new.Misc["Fields"].(string) + "\n\t\t"
 		} else {
-			new = meta.NewNew(rcvType, method)
-			metaFile.Methods = append(metaFile.Methods, new)
+			new = &meta.Method{
+				RcvType: tgt.RcvType,
+				Name:    method,
+				RetVals: tgt.RcvType,
+				Misc:    make(map[string]interface{}),
+				Tmpl:    "new",
+			}
+			tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, new)
 		}
 
-		arg := lowerFirst(fldNm.Name)
-		new.Misc["Args"] = fmt.Sprintf("%s%s %s", args, arg, fldType)
-		new.Misc["Fields"] = fmt.Sprintf("%s%s: %s", fields, fldNm.Name, arg) + ", "
+		arg := lowerFirst(fldNm)
+		new.Misc["Args"] = fmt.Sprintf("%s%s %s", args, arg, tgt.FldType)
+		new.Misc["Fields"] = fmt.Sprintf("%s%s: %s", fields, fldNm, arg) + ", "
 	}
 }
 

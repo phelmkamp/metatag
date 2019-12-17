@@ -27,15 +27,15 @@ type File struct {
 }
 
 // NewFile creates a new File with all fields initialized
-func NewFile(pkg string) File {
-	return File{
+func NewFile(pkg string) *File {
+	return &File{
 		Package: pkg,
 		Imports: make(map[string]struct{}),
 	}
 }
 
 // String generates the file content
-func (f File) String() string {
+func (f *File) String() string {
 	return topComment + fmt.Sprintf(fileTemplate, f.Package, f.Imports, f.Methods)
 }
 
@@ -70,90 +70,13 @@ type Method struct {
 	FldName string
 	FldType string
 	Misc    map[string]interface{}
-	tmpl    string
-}
-
-// NewGetter creates a new getter metthod
-func NewGetter(rcvName, rcvType, name, retType, field string) *Method {
-	return &Method{
-		RcvName: rcvName,
-		RcvType: rcvType,
-		Name:    name,
-		RetVals: retType,
-		FldName: field,
-		tmpl:    "getter",
-	}
-}
-
-// NewSetter creates a new setter method
-func NewSetter(rcvName, rcvType, name, argName, argType, field string) *Method {
-	return &Method{
-		RcvName: rcvName,
-		RcvType: rcvType,
-		Name:    name,
-		ArgName: argName,
-		ArgType: argType,
-		FldName: field,
-		tmpl:    "setter",
-	}
-}
-
-// NewFilter creates a new filter method
-func NewFilter(rcvName, rcvType, name, argType, field, fldType string) *Method {
-	return &Method{
-		RcvName: rcvName,
-		RcvType: rcvType,
-		Name:    name,
-		ArgType: argType,
-		RetVals: fldType,
-		FldName: field,
-		FldType: fldType,
-		tmpl:    "filter",
-	}
-}
-
-// NewMapper creates a new mapper method
-func NewMapper(rcvName, rcvType, name, argType, field, target string) *Method {
-	fldType := "[]" + argType
-	return &Method{
-		RcvName: rcvName,
-		RcvType: rcvType,
-		Name:    name,
-		ArgType: fmt.Sprintf("func(%s) %s", argType, target),
-		RetVals: "[]" + target,
-		FldName: field,
-		FldType: fldType,
-		tmpl:    "mapper",
-	}
-}
-
-// NewStringer creates a new stringer method
-func NewStringer(rcvName, rcvType string) *Method {
-	return &Method{
-		RcvName: rcvName,
-		RcvType: rcvType,
-		Name:    "String",
-		RetVals: "string",
-		Misc:    make(map[string]interface{}),
-		tmpl:    "stringer",
-	}
-}
-
-// NewNew creates a new "New" method
-func NewNew(rcvType, name string) *Method {
-	return &Method{
-		RcvType: rcvType,
-		Name:    name,
-		RetVals: rcvType,
-		Misc:    make(map[string]interface{}),
-		tmpl:    "new",
-	}
+	Tmpl    string
 }
 
 // String generates the method code
 func (m Method) String() string {
-	tmplTxt := tmplBox.MustString(m.tmpl + ".tmpl")
-	tmplMessage, err := template.New(m.tmpl).Parse(tmplTxt)
+	tmplTxt := tmplBox.MustString(m.Tmpl + ".tmpl")
+	tmplMessage, err := template.New(m.Tmpl).Parse(tmplTxt)
 	if err != nil {
 		log.Fatal(err)
 	}
