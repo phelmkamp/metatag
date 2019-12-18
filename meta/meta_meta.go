@@ -2,7 +2,7 @@
 // (or edit away - I'm a comment, not a cop)
 package meta
 
-func (f File) FilterMethods(fn func(*Method) bool, n int) Methods {
+func (f *File) FilterMethods(fn func(*Method) bool, n int) Methods {
 	cap := n
 	if n < 1 {
 		cap = len(f.Methods)

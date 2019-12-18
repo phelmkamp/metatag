@@ -23,7 +23,7 @@ var (
 type File struct {
 	Package string
 	Imports Imports
-	Methods Methods `meta:"filter"`
+	Methods Methods `meta:"ptr;filter"`
 }
 
 // NewFile creates a new File with all fields initialized

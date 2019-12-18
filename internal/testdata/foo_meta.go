@@ -10,9 +10,9 @@ import (
 // NewFoo creates a new Foo with the given initial values.
 func NewFoo(name string, desc string, labels []string) Foo {
 	return Foo{
-		name: name, 
-		Desc: desc, 
-		labels: labels, 
+		name: name,
+		Desc: desc,
+		labels: labels,
 	}
 }
 
@@ -81,6 +81,11 @@ func (f Foo) MapLabelsToTime(fn func(string) time.Time) []time.Time {
 // SetStringer sets the given value as stringer.
 func (f *Foo) SetStringer(s fmt.Stringer) {
 	f.stringer = s
+}
+
+// String returns the "native" format of Bar. Implements the fmt.Stringer interface.
+func (b Bar) String() string {
+	return fmt.Sprintf("%v", b.name)
 }
 
 // Foos returns the value of foos.
