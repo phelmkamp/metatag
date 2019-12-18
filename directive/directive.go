@@ -134,7 +134,12 @@ func Stringer(tgt *Target) {
 
 	for _, fldNm := range tgt.FldNames {
 		log.Print("Adding to method: String\n")
-		found := tgt.MetaFile.FilterMethods(func(m *meta.Method) bool { return m.Name == "String" }, 1)
+		found := tgt.MetaFile.FilterMethods(
+			func(m *meta.Method) bool {
+				return m.RcvName == tgt.RcvName && m.RcvType == tgt.RcvType && m.Name == "String"
+			},
+			1,
+		)
 		var format, a string
 		var stringer *meta.Method
 		if len(found) > 0 {
@@ -182,7 +187,7 @@ func New(tgt *Target) {
 
 		arg := lowerFirst(fldNm)
 		new.Misc["Args"] = fmt.Sprintf("%s%s %s", args, arg, tgt.FldType)
-		new.Misc["Fields"] = fmt.Sprintf("%s%s: %s", fields, fldNm, arg) + ", "
+		new.Misc["Fields"] = fmt.Sprintf("%s%s: %s", fields, fldNm, arg) + ","
 	}
 }
 
