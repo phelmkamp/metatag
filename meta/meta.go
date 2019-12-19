@@ -61,16 +61,13 @@ func (is Imports) String() string {
 
 // Method represents a generated method
 type Method struct {
-	RcvName string
-	RcvType string
-	Name    string
-	ArgName string
-	ArgType string
-	RetVals string
-	FldName string
-	FldType string
-	Misc    map[string]interface{}
-	Tmpl    string
+	RcvName, RcvType string
+	Name             string
+	ArgName, ArgType string
+	RetVals          string
+	FldName, FldType string
+	Misc             map[string]interface{}
+	Tmpl             string
 }
 
 // String generates the method code
