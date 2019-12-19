@@ -11,9 +11,9 @@ func (p Person) String() string {
 	return fmt.Sprintf("%v", p.Name)
 }
 
-// FilterPersons returns a copy of Persons, omitting elements that are rejected by the given function.
+// Filter returns a copy of Persons, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
-func (p Persons) FilterPersons(fn func(Person) bool, n int) []Person {
+func (p Persons) Filter(fn func(Person) bool, n int) []Person {
 	cap := n
 	if n < 1 {
 		cap = len(p.Persons)
@@ -29,8 +29,8 @@ func (p Persons) FilterPersons(fn func(Person) bool, n int) []Person {
 	return result
 }
 
-// MapPersonsToInt returns a new slice with the results of calling the given function for each element of Persons.
-func (p Persons) MapPersonsToInt(fn func(Person) int) []int {
+// MapToInt returns a new slice with the results of calling the given function for each element of Persons.
+func (p Persons) MapToInt(fn func(Person) int) []int {
 	result := make([]int, len(p.Persons))
 	for i := range p.Persons {
 		result[i] = fn(p.Persons[i])

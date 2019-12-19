@@ -9,13 +9,16 @@ import (
 	"github.com/phelmkamp/metatag/meta"
 )
 
+const (
+	omitField = "omitfield"
+)
+
 // Target represents the target of the directive
 type Target struct {
-	MetaFile *meta.File
-	RcvName  string
-	RcvType  string
-	FldNames []string
-	FldType  string
+	MetaFile         *meta.File
+	RcvName, RcvType string
+	FldNames         []string
+	FldType          string
 }
 
 // Ptr converts the receiver to a pointer for all subsequent directives
@@ -74,12 +77,23 @@ func Setter(tgt *Target) {
 }
 
 // Filter generates a filter method for each name of the given field
-func Filter(tgt *Target) {
+func Filter(tgt *Target, opts []string) {
 	elemType := strings.TrimPrefix(tgt.FldType, "[]")
+
+	var isOmitField bool
+	for i := range opts {
+		if opts[i] == omitField {
+			isOmitField = true
+			break
+		}
+	}
 
 	for _, fldNm := range tgt.FldNames {
 
-		method := "Filter" + upperFirst(fldNm)
+		method := "Filter"
+		if !isOmitField {
+			method += upperFirst(fldNm)
+		}
 
 		log.Printf("Adding method: %s\n", method)
 		filter := meta.Method{
@@ -97,12 +111,20 @@ func Filter(tgt *Target) {
 }
 
 // Map generates a mapper method for each name of the given field
-func Map(tgt *Target, result string) {
+func Map(tgt *Target, result string, opts []string) {
 	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
 	sel := result
 	if resSubs := strings.SplitN(result, ".", 2); len(resSubs) > 1 {
 		sel = resSubs[1]
+	}
+
+	var isOmitField bool
+	for i := range opts {
+		if opts[i] == omitField {
+			isOmitField = true
+			break
+		}
 	}
 
 	for _, fldNm := range tgt.FldNames {
@@ -111,7 +133,11 @@ func Map(tgt *Target, result string) {
 			continue
 		}
 
-		method := fmt.Sprintf("Map%sTo%s", upperFirst(fldNm), upperFirst(sel))
+		var fldPart string
+		if !isOmitField {
+			fldPart = upperFirst(fldNm)
+		}
+		method := fmt.Sprintf("Map%sTo%s", fldPart, upperFirst(sel))
 
 		log.Printf("Adding method: %s\n", method)
 		mapper := meta.Method{

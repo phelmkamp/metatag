@@ -53,12 +53,14 @@ Always uses pointer receiver.
 `filter` (slice only)
 
 Generates a method that returns a copy of the slice, omitting elements that are rejected by the given function.
-Method name is the name of the field prepended with `Filter`. Uses value receiver by default.
+Method name is `Filter`, followed by the name of the field unless `omitfield` is specified.
+Uses value receiver by default.
 
-`map:$type` (slice only)
+`map:$Type` (slice only)
 
 Generates a method that returns a copy of the slice, mapping elements to the specified type using the given function.
-Method name is of the form `MapFieldToType`. Uses value receiver by default.
+Method name is of the form `MapFieldTo$Type`, or just `MapTo$Type` if `omitfield` is specified.
+Uses value receiver by default.
 
 `stringer`
 

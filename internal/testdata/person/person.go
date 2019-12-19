@@ -8,5 +8,5 @@ type Person struct {
 }
 
 type Persons struct {
-	Persons []Person `meta:"filter;map:int"`
+	Persons []Person `meta:"filter,omitfield;map:int,omitfield"`
 }

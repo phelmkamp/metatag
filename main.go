@@ -117,7 +117,7 @@ func main() {
 					metaTag = strings.TrimPrefix(metaTag, "meta:\"")
 					metaTag = strings.TrimSuffix(metaTag, "\"")
 
-					// some directive modify target, use a local copy
+					// some directives modify target, use a local copy
 					fldTgt := tgt
 
 					var fldPkg string
@@ -155,6 +155,11 @@ func main() {
 						if len(dSubs) < 1 {
 							continue
 						}
+
+						opts := strings.Split(dSubs[len(dSubs)-1], ",")
+						dSubs[len(dSubs)-1] = opts[0]
+						opts = opts[1:]
+
 						switch dSubs[0] {
 						case "ptr":
 							directive.Ptr(&fldTgt)
@@ -163,12 +168,12 @@ func main() {
 						case "setter":
 							directive.Setter(&fldTgt)
 						case "filter":
-							directive.Filter(&fldTgt)
+							directive.Filter(&fldTgt, opts)
 						case "map":
 							if len(dSubs) < 2 {
 								continue
 							}
-							directive.Map(&fldTgt, dSubs[1])
+							directive.Map(&fldTgt, dSubs[1], opts)
 						case "stringer":
 							directive.Stringer(&fldTgt)
 						case "new":
