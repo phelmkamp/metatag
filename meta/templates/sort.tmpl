@@ -1,0 +1,14 @@
+// Len is the number of elements in the collection.
+func ({{.RcvName}} {{.RcvType}}) Len() int {
+	return len({{.RcvName}}.{{.FldName}})
+}
+
+// Swap swaps the elements with indexes i and j.
+func ({{.RcvName}} {{.RcvType}}) Swap(i, j int) {
+	{{.RcvName}}.{{.FldName}}[i], {{.RcvName}}.{{.FldName}}[j] = {{.RcvName}}.{{.FldName}}[j], {{.RcvName}}.{{.FldName}}[i]
+}
+
+// Sort is a convenience method.
+func ({{.RcvName}} {{.RcvType}}) Sort() {
+	sort.Sort({{.RcvName}})
+}

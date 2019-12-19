@@ -174,6 +174,8 @@ func main() {
 								continue
 							}
 							directive.Map(&fldTgt, dSubs[1], opts)
+						case "sort":
+							directive.Sort(&fldTgt, opts)
 						case "stringer":
 							directive.Stringer(&fldTgt)
 						case "new":
