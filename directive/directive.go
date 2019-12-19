@@ -180,6 +180,7 @@ func Sort(tgt *Target, opts []string) {
 		}
 	}
 	if isStringer {
+		log.Println("Adding method: Less")
 		less := meta.Method{
 			RcvName: tgt.RcvName,
 			RcvType: tgt.RcvType,
