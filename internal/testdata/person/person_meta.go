@@ -4,6 +4,7 @@ package person
 
 import (
 	"fmt"
+	"sort"
 )
 
 // String returns the "native" format of Person. Implements the fmt.Stringer interface.
@@ -11,17 +12,17 @@ func (p Person) String() string {
 	return fmt.Sprintf("%v", p.Name)
 }
 
-// Filter returns a copy of Persons, omitting elements that are rejected by the given function.
+// Filter returns a copy of Ps, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
 func (p Persons) Filter(fn func(Person) bool, n int) []Person {
 	cap := n
 	if n < 1 {
-		cap = len(p.Persons)
+		cap = len(p.Ps)
 	}
 	result := make([]Person, 0, cap)
-	for i := range p.Persons {
-		if fn(p.Persons[i]) {
-			if result = append(result, p.Persons[i]); len(result) >= cap {
+	for i := range p.Ps {
+		if fn(p.Ps[i]) {
+			if result = append(result, p.Ps[i]); len(result) >= cap {
 				return result
 			}
 		}
@@ -29,11 +30,32 @@ func (p Persons) Filter(fn func(Person) bool, n int) []Person {
 	return result
 }
 
-// MapToInt returns a new slice with the results of calling the given function for each element of Persons.
+// MapToInt returns a new slice with the results of calling the given function for each element of Ps.
 func (p Persons) MapToInt(fn func(Person) int) []int {
-	result := make([]int, len(p.Persons))
-	for i := range p.Persons {
-		result[i] = fn(p.Persons[i])
+	result := make([]int, len(p.Ps))
+	for i := range p.Ps {
+		result[i] = fn(p.Ps[i])
 	}
 	return result
+}
+
+// Len is the number of elements in the collection.
+func (p Persons) Len() int {
+	return len(p.Ps)
+}
+
+// Swap swaps the elements with indexes i and j.
+func (p Persons) Swap(i, j int) {
+	p.Ps[i], p.Ps[j] = p.Ps[j], p.Ps[i]
+}
+
+// Sort is a convenience method.
+func (p Persons) Sort() {
+	sort.Sort(p)
+}
+
+// Less reports whether the element with
+// index i should sort before the element with index j.
+func (p Persons) Less(i, j int) bool {
+	return p.Ps[i].String() < p.Ps[j].String()
 }

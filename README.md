@@ -58,9 +58,16 @@ Uses value receiver by default.
 
 `map:$Type` (slice only)
 
-Generates a method that returns a copy of the slice, mapping elements to the specified type using the given function.
+Generates a method that returns the result of mapping all elements to the specified type using the given function.
 Method name is of the form `MapFieldTo$Type`, or just `MapTo$Type` if `omitfield` is specified.
 Uses value receiver by default.
+
+`sort` (slice only)
+
+Generates `Len` and `Swap` methods to implement [sort.Interface](https://golang.org/pkg/sort/#Interface), along with a `Sort` convenience method. Include the `stringer` option to generate a `Less` method that compares elements by their string representations. Otherwise, a `Less` method must be implemented separately.
+Uses value receivers by default.
+
+Tip: Wrap the slice in a struct to take full advantage. See [person.Persons](internal/testdata/person/person.go) for an example.
 
 `stringer`
 
@@ -68,7 +75,7 @@ Includes the field in the result of the generated `String` method. Uses value re
 
 `new`
 
-Includes the field as an argument to the generated `NewType` method.
+Includes the field as an argument to the generated `New$Type` method.
 
 `ptr`
 

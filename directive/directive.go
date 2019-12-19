@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	omitField = "omitfield"
+	optOmitField = "omitfield"
+	optStringer  = "stringer"
 )
 
 // Target represents the target of the directive
@@ -82,7 +83,7 @@ func Filter(tgt *Target, opts []string) {
 
 	var isOmitField bool
 	for i := range opts {
-		if opts[i] == omitField {
+		if opts[i] == optOmitField {
 			isOmitField = true
 			break
 		}
@@ -121,7 +122,7 @@ func Map(tgt *Target, result string, opts []string) {
 
 	var isOmitField bool
 	for i := range opts {
-		if opts[i] == omitField {
+		if opts[i] == optOmitField {
 			isOmitField = true
 			break
 		}
@@ -150,6 +151,43 @@ func Map(tgt *Target, result string, opts []string) {
 			Tmpl:    "mapper",
 		}
 		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &mapper)
+	}
+}
+
+// Sort generates sort methods for the first name of the given field
+func Sort(tgt *Target, opts []string) {
+	log.Print("Adding import: \"sort\"\n")
+	tgt.MetaFile.Imports["sort"] = struct{}{}
+
+	fldNm := tgt.FldNames[0]
+
+	log.Println("Adding method: Len")
+	log.Println("Adding method: Swap")
+	log.Println("Adding method: Sort")
+	sort := meta.Method{
+		RcvName: tgt.RcvName,
+		RcvType: tgt.RcvType,
+		FldName: fldNm,
+		Tmpl:    "sort",
+	}
+	tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &sort)
+
+	var isStringer bool
+	for i := range opts {
+		if opts[i] == optStringer {
+			isStringer = true
+			break
+		}
+	}
+	if isStringer {
+		log.Println("Adding method: Less")
+		less := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: tgt.RcvType,
+			FldName: fldNm,
+			Tmpl:    "less",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &less)
 	}
 }
 

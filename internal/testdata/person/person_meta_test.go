@@ -2,6 +2,8 @@ package person
 
 import (
 	"fmt"
+	"reflect"
+	"testing"
 	"time"
 )
 
@@ -47,4 +49,34 @@ func Example() {
 	// Output: Bob
 	// [Ann Charlie]
 	// [36 12 25]
+}
+
+func TestPersons_Sort(t *testing.T) {
+	tests := []struct {
+		name string
+		p    Persons
+		want []Person
+	}{
+		{
+			name: "abc",
+			p: Persons{[]Person{
+				{Name: "b"},
+				{Name: "c"},
+				{Name: "a"},
+			}},
+			want: []Person{
+				{Name: "a"},
+				{Name: "b"},
+				{Name: "c"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.p.Sort()
+			if !reflect.DeepEqual(tt.p.Ps, tt.want) {
+				t.Errorf("got = %v, want %v", tt.p.Ps, tt.want)
+			}
+		})
+	}
 }
