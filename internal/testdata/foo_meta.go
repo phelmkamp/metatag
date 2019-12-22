@@ -3,8 +3,9 @@
 package testdata
 
 import (
-	"fmt"
 	"time"
+	"fmt"
+	"reflect"
 )
 
 // NewFoo creates a new Foo with the given initial values.
@@ -86,6 +87,22 @@ func (f *Foo) SetStringer(s fmt.Stringer) {
 // String returns the "native" format of Bar. Implements the fmt.Stringer interface.
 func (b Bar) String() string {
 	return fmt.Sprintf("%v", b.name)
+}
+
+// Equal answers whether v is equivalent to b.
+// Always returns false if v is not a Bar.
+func (b Bar) Equal(v interface{}) bool {
+	b2, ok := v.(Bar)
+	if !ok {
+		return false
+	}
+	if b.name != b2.name {
+		return false
+	}
+	if !reflect.DeepEqual(b.times, b2.times) {
+		return false
+	}
+	return true
 }
 
 // Foos returns the value of foos.

@@ -180,6 +180,8 @@ func main() {
 							directive.Stringer(&fldTgt)
 						case "new":
 							directive.New(&fldTgt)
+						case "equal":
+							directive.Equal(&fldTgt, opts)
 						default:
 							log.Printf("Unknown directive: %s\n", d)
 						}
