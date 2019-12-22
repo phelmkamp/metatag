@@ -1,0 +1,10 @@
+// Equal answers whether v is equivalent to {{.RcvName}}.
+// Always returns false if v is not a {{.RcvType}}.
+func ({{.RcvName}} {{.RcvType}}) Equal(v interface{}) bool {
+	{{.RcvName}}2, ok := v.({{.RcvType}})
+	if !ok {
+		return false
+	}
+	{{.Misc.Cmps}}
+	return true
+}

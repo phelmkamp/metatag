@@ -12,6 +12,7 @@ import (
 const (
 	optOmitField = "omitfield"
 	optStringer  = "stringer"
+	optReflect   = "reflect"
 )
 
 // Target represents the target of the directive
@@ -252,6 +253,49 @@ func New(tgt *Target) {
 		arg := lowerFirst(fldNm)
 		new.Misc["Args"] = fmt.Sprintf("%s%s %s", args, arg, tgt.FldType)
 		new.Misc["Fields"] = fmt.Sprintf("%s%s: %s", fields, fldNm, arg) + ","
+	}
+}
+
+// Equal adds each name of the given field to the Equal() implementation
+func Equal(tgt *Target, opts []string) {
+	for _, fldNm := range tgt.FldNames {
+		log.Print("Adding to method: Equal\n")
+		found := tgt.MetaFile.FilterMethods(
+			func(m *meta.Method) bool {
+				return m.RcvName == tgt.RcvName && m.RcvType == tgt.RcvType && m.Name == "Equal"
+			},
+			1,
+		)
+		var cmps string
+		var equal *meta.Method
+		if len(found) > 0 {
+			equal = found[0]
+			cmps = equal.Misc["Cmps"].(string) + "\n\t"
+		} else {
+			equal = &meta.Method{
+				RcvName: tgt.RcvName,
+				RcvType: tgt.RcvType,
+				Name:    "Equal",
+				Misc:    make(map[string]interface{}),
+				Tmpl:    "equal",
+			}
+			tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, equal)
+		}
+		var cmp string
+		if len(opts) > 0 && opts[0] == optReflect {
+			log.Print("Adding import: \"reflect\"\n")
+			tgt.MetaFile.Imports["reflect"] = struct{}{}
+			cmp = fmt.Sprintf(
+				"if !reflect.DeepEqual(%s.%s, %s2.%s) {\n\t\treturn false\n\t}",
+				tgt.RcvName, fldNm, tgt.RcvName, fldNm,
+			)
+		} else {
+			cmp = fmt.Sprintf(
+				"if %s.%s != %s2.%s {\n\t\treturn false\n\t}",
+				tgt.RcvName, fldNm, tgt.RcvName, fldNm,
+			)
+		}
+		equal.Misc["Cmps"] = cmps + cmp
 	}
 }
 

@@ -77,6 +77,12 @@ Includes the field in the result of the generated `String` method. Uses value re
 
 Includes the field as an argument to the generated `New$Type` method.
 
+`equal`
+
+Includes the field in the generated `Equal` method.
+Specify the `reflect` option to compare the field using `reflect.DeepEqual`.
+Uses value receiver by default.
+
 `ptr`
 
 Specifies that a pointer receiver be used for all subsequent directives.
