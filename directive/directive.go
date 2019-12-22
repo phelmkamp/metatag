@@ -24,7 +24,7 @@ var (
 		"mapper":   mapper,
 		"sort":     sort,
 		"stringer": stringer,
-		"new":      new,
+		"new":      runNew,
 		"equal":    equal,
 	}
 )
@@ -268,8 +268,8 @@ func stringer(tgt *Target, opts []string) {
 	}
 }
 
-// new adds each name of the given field to the New() implementation.
-func new(tgt *Target, opts []string) {
+// runNew adds each name of the given field to the New() implementation.
+func runNew(tgt *Target, opts []string) {
 	method := "New" + upperFirst(tgt.RcvType)
 	for _, fldNm := range tgt.FldNames {
 		log.Printf("Adding to method: %s\n", method)
