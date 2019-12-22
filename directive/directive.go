@@ -15,7 +15,21 @@ const (
 	optReflect   = "reflect"
 )
 
-// Target represents the target of the directive
+var (
+	runFuncs = map[string]runFunc{
+		"ptr":      ptr,
+		"getter":   getter,
+		"setter":   setter,
+		"filter":   filter,
+		"mapper":   mapper,
+		"sort":     sort,
+		"stringer": stringer,
+		"new":      runNew,
+		"equal":    equal,
+	}
+)
+
+// Target represents the target of the directive.
 type Target struct {
 	MetaFile         *meta.File
 	RcvName, RcvType string
@@ -23,14 +37,38 @@ type Target struct {
 	FldType          string
 }
 
-// Ptr converts the receiver to a pointer for all subsequent directives
-func Ptr(tgt *Target) {
+type runFunc func(*Target, []string)
+
+// RunAll runs all of the given directives.
+func RunAll(ds []string, tgt *Target) {
+	for i := range ds {
+		Run(ds[i], tgt)
+	}
+}
+
+// Run runs the given directive.
+func Run(d string, tgt *Target) {
+	opts := strings.Split(d, ",")
+	d = opts[0]
+	opts = opts[1:]
+
+	run, ok := runFuncs[d]
+	if !ok {
+		log.Printf("Unknown directive: %s\n", d)
+		return
+	}
+
+	run(tgt, opts)
+}
+
+// ptr converts the receiver to a pointer for all subsequent directives.
+func ptr(tgt *Target, opts []string) {
 	tgt.RcvType = "*" + tgt.RcvType
 	log.Printf("Using pointer receiver: %s\n", tgt.RcvType)
 }
 
-// Getter generates a getter method for each name of the given field
-func Getter(tgt *Target) {
+// getter generates a getter method for each name of the given field.
+func getter(tgt *Target, opts []string) {
 	for _, fldNm := range tgt.FldNames {
 		method := upperFirst(fldNm)
 		if method == fldNm {
@@ -50,8 +88,8 @@ func Getter(tgt *Target) {
 	}
 }
 
-// Setter generates a setter method for each name of the given field
-func Setter(tgt *Target) {
+// setter generates a setter method for each name of the given field.
+func setter(tgt *Target, opts []string) {
 	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
 	arg := argName(tgt.RcvName, elemType)
@@ -78,8 +116,8 @@ func Setter(tgt *Target) {
 	}
 }
 
-// Filter generates a filter method for each name of the given field
-func Filter(tgt *Target, opts []string) {
+// filter generates a filter method for each name of the given field.
+func filter(tgt *Target, opts []string) {
 	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
 	var isOmitField bool
@@ -112,14 +150,22 @@ func Filter(tgt *Target, opts []string) {
 	}
 }
 
-// Map generates a mapper method for each name of the given field
-func Map(tgt *Target, result string, opts []string) {
-	elemType := strings.TrimPrefix(tgt.FldType, "[]")
+// mapper generates a mapper method for each name of the given field.
+func mapper(tgt *Target, opts []string) {
+	if len(opts) < 1 {
+		log.Print("skipping 'mapper' - must specify target type as first option\n")
+		return
+	}
+
+	result := opts[0]
+	opts = opts[1:]
 
 	sel := result
 	if resSubs := strings.SplitN(result, ".", 2); len(resSubs) > 1 {
 		sel = resSubs[1]
 	}
+
+	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
 	var isOmitField bool
 	for i := range opts {
@@ -130,11 +176,6 @@ func Map(tgt *Target, result string, opts []string) {
 	}
 
 	for _, fldNm := range tgt.FldNames {
-		if elemType == tgt.FldType {
-			log.Printf("'map' not valid for field %s.%s - must be a slice\n", tgt.RcvName, fldNm)
-			continue
-		}
-
 		var fldPart string
 		if !isOmitField {
 			fldPart = upperFirst(fldNm)
@@ -155,8 +196,8 @@ func Map(tgt *Target, result string, opts []string) {
 	}
 }
 
-// Sort generates sort methods for the first name of the given field
-func Sort(tgt *Target, opts []string) {
+// sort generates sort methods for the first name of the given field.
+func sort(tgt *Target, opts []string) {
 	log.Print("Adding import: \"sort\"\n")
 	tgt.MetaFile.Imports["sort"] = struct{}{}
 
@@ -192,8 +233,8 @@ func Sort(tgt *Target, opts []string) {
 	}
 }
 
-// Stringer adds each name of the given field to the String() implementation
-func Stringer(tgt *Target) {
+// stringer adds each name of the given field to the String() implementation.
+func stringer(tgt *Target, opts []string) {
 	log.Print("Adding import: \"fmt\"\n")
 	tgt.MetaFile.Imports["fmt"] = struct{}{}
 
@@ -227,8 +268,8 @@ func Stringer(tgt *Target) {
 	}
 }
 
-// New adds each name of the given field to the New() implementation
-func New(tgt *Target) {
+// runNew adds each name of the given field to the New() implementation.
+func runNew(tgt *Target, opts []string) {
 	method := "New" + upperFirst(tgt.RcvType)
 	for _, fldNm := range tgt.FldNames {
 		log.Printf("Adding to method: %s\n", method)
@@ -256,8 +297,8 @@ func New(tgt *Target) {
 	}
 }
 
-// Equal adds each name of the given field to the Equal() implementation
-func Equal(tgt *Target, opts []string) {
+// equal adds each name of the given field to the Equal() implementation.
+func equal(tgt *Target, opts []string) {
 	for _, fldNm := range tgt.FldNames {
 		log.Print("Adding to method: Equal\n")
 		found := tgt.MetaFile.FilterMethods(

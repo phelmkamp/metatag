@@ -9,12 +9,12 @@ Go metaprogramming using struct tags + generate
 
 1. Define struct tags
 
-	Format is `meta:"[directive1][;directive2]"`. For example:
+	Format is `meta:"directive[,option][;directive2]"`. For example:
 	```go
 	type Foo struct {
 		name, Desc string   `meta:"getter"`
 		size       int      `meta:"ptr;getter;setter"`
-		labels     []string `meta:"setter;getter;filter"`
+		labels     []string `meta:"setter;getter;mapper,int"`
 	}
 	```
 
@@ -56,7 +56,7 @@ Generates a method that returns a copy of the slice, omitting elements that are 
 Method name is `Filter`, followed by the name of the field unless `omitfield` is specified.
 Uses value receiver by default.
 
-`map:$Type` (slice only)
+`mapper,$type` (slice only)
 
 Generates a method that returns the result of mapping all elements to the specified type using the given function.
 Method name is of the form `MapFieldTo$Type`, or just `MapTo$Type` if `omitfield` is specified.
