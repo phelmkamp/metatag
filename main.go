@@ -149,43 +149,7 @@ func main() {
 						fldTgt.FldNames[i] = f.Names[i].Name
 					}
 
-					directives := strings.Split(metaTag, ";")
-					for _, d := range directives {
-						dSubs := strings.SplitN(d, ":", 2)
-						if len(dSubs) < 1 {
-							continue
-						}
-
-						opts := strings.Split(dSubs[len(dSubs)-1], ",")
-						dSubs[len(dSubs)-1] = opts[0]
-						opts = opts[1:]
-
-						switch dSubs[0] {
-						case "ptr":
-							directive.Ptr(&fldTgt)
-						case "getter":
-							directive.Getter(&fldTgt)
-						case "setter":
-							directive.Setter(&fldTgt)
-						case "filter":
-							directive.Filter(&fldTgt, opts)
-						case "map":
-							if len(dSubs) < 2 {
-								continue
-							}
-							directive.Map(&fldTgt, dSubs[1], opts)
-						case "sort":
-							directive.Sort(&fldTgt, opts)
-						case "stringer":
-							directive.Stringer(&fldTgt)
-						case "new":
-							directive.New(&fldTgt)
-						case "equal":
-							directive.Equal(&fldTgt, opts)
-						default:
-							log.Printf("Unknown directive: %s\n", d)
-						}
-					}
+					directive.RunAll(strings.Split(metaTag, ";"), &fldTgt)
 
 					if fldPkg != "" {
 						var importPath string
