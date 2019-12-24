@@ -4,9 +4,9 @@
 package foobar
 
 import (
+	"fmt"
 	"reflect"
 	"time"
-	"fmt"
 )
 
 // NewFoo creates a new Foo with the given initial values.
@@ -64,7 +64,7 @@ func (f Foo) FilterLabels(fn func(string) bool, n int) []string {
 	for i := range f.labels {
 		if fn(f.labels[i]) {
 			if result = append(result, f.labels[i]); len(result) >= cap {
-				return result
+				break
 			}
 		}
 	}
@@ -156,7 +156,7 @@ func (b Bar) FilterTimes(fn func(time.Time) bool, n int) []time.Time {
 	for i := range b.times {
 		if fn(b.times[i]) {
 			if result = append(result, b.times[i]); len(result) >= cap {
-				return result
+				break
 			}
 		}
 	}

@@ -8,5 +8,5 @@ type Person struct {
 }
 
 type Persons struct {
-	Ps []Person `meta:"filter,omitfield;mapper,int,omitfield;sort,stringer"`
+	result []Person `meta:"wrapper;new;filter;mapper,int;sort,stringer;getter"`
 }
