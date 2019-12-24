@@ -13,50 +13,64 @@ func (p Person) String() string {
 	return fmt.Sprintf("%v", p.Name)
 }
 
-// Filter returns a copy of Ps, omitting elements that are rejected by the given function.
+// NewPersons creates a new Persons with the given initial values.
+func NewPersons(result []Person) Persons {
+	return Persons{
+		result: result,
+	}
+}
+
+// Filter returns a copy of result, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
-func (p Persons) Filter(fn func(Person) bool, n int) []Person {
+func (p Persons) Filter(fn func(Person) bool, n int) Persons {
 	cap := n
 	if n < 1 {
-		cap = len(p.Ps)
+		cap = len(p.result)
 	}
 	result := make([]Person, 0, cap)
-	for i := range p.Ps {
-		if fn(p.Ps[i]) {
-			if result = append(result, p.Ps[i]); len(result) >= cap {
-				return result
+	for i := range p.result {
+		if fn(p.result[i]) {
+			if result = append(result, p.result[i]); len(result) >= cap {
+				break
 			}
 		}
 	}
-	return result
+	p.result = result
+	return p
 }
 
-// MapToInt returns a new slice with the results of calling the given function for each element of Ps.
+// MapToInt returns a new slice with the results of calling the given function for each element of result.
 func (p Persons) MapToInt(fn func(Person) int) []int {
-	result := make([]int, len(p.Ps))
-	for i := range p.Ps {
-		result[i] = fn(p.Ps[i])
+	result := make([]int, len(p.result))
+	for i := range p.result {
+		result[i] = fn(p.result[i])
 	}
 	return result
 }
 
 // Len is the number of elements in the collection.
 func (p Persons) Len() int {
-	return len(p.Ps)
+	return len(p.result)
 }
 
 // Swap swaps the elements with indexes i and j.
 func (p Persons) Swap(i, j int) {
-	p.Ps[i], p.Ps[j] = p.Ps[j], p.Ps[i]
+	p.result[i], p.result[j] = p.result[j], p.result[i]
 }
 
 // Sort is a convenience method.
-func (p Persons) Sort() {
+func (p Persons) Sort() Persons {
 	sort.Sort(p)
+	return p
 }
 
 // Less reports whether the element with
 // index i should sort before the element with index j.
 func (p Persons) Less(i, j int) bool {
-	return p.Ps[i].String() < p.Ps[j].String()
+	return p.result[i].String() < p.result[j].String()
+}
+
+// Result returns the value of result.
+func (p Persons) Result() []Person {
+	return p.result
 }

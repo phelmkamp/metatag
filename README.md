@@ -53,8 +53,12 @@ Always uses pointer receiver.
 `filter` (slice only)
 
 Generates a method that returns a copy of the slice, omitting elements that are rejected by the given function.
-Method name is `Filter`, followed by the name of the field unless `omitfield` is specified.
+Method name is `Filter` followed by the name of the field.
 Uses value receiver by default.
+
+Options
+* `omitfield`: exclude field name from method (i.e. just `Filter`) 
+* `chain`: store result in-place and return the receiver (facilitates method chaining)
 
 `mapper,$type` (slice only)
 
@@ -67,7 +71,11 @@ Uses value receiver by default.
 Generates `Len` and `Swap` methods to implement [sort.Interface](https://golang.org/pkg/sort/#Interface), along with a `Sort` convenience method. Include the `stringer` option to generate a `Less` method that compares elements by their string representations. Otherwise, a `Less` method must be implemented separately.
 Uses value receivers by default.
 
-Tip: Wrap the slice in a struct to take full advantage. See [person.Persons](internal/testdata/person/person.go) for an example.
+`wrapper` (slice only)
+
+Indicates that the struct is a "wrapper" for the given slice. Enables `omitfield` and `chain` options for all subsequent directives.
+
+See [person.Persons](internal/testdata/person/person.go) for an example.
 
 `stringer`
 

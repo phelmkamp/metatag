@@ -9,9 +9,9 @@ func ({{.RcvName}} {{.RcvType}}) {{.Name}}(fn func({{.ArgType}}) bool, n int) {{
 	for i := range {{.RcvName}}.{{.FldName}} {
 		if fn({{.RcvName}}.{{.FldName}}[i]) {
 			if result = append(result, {{.RcvName}}.{{.FldName}}[i]); len(result) >= cap {
-				return result
+				break
 			}
 		}
 	}
-	return result
+	{{.Misc.RetStmt}}
 }

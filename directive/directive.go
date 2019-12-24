@@ -13,6 +13,7 @@ const (
 	optOmitField = "omitfield"
 	optStringer  = "stringer"
 	optReflect   = "reflect"
+	optChain     = "chain"
 )
 
 var (
@@ -35,6 +36,7 @@ type Target struct {
 	RcvName, RcvType string
 	FldNames         []string
 	FldType          string
+	DfltOpts         []string
 }
 
 type runFunc func(*Target, []string)
@@ -48,9 +50,17 @@ func RunAll(ds []string, tgt *Target) {
 
 // Run runs the given directive.
 func Run(d string, tgt *Target) {
+	if d == "wrapper" {
+		// enable options and continue
+		tgt.DfltOpts = append(tgt.DfltOpts, optOmitField)
+		tgt.DfltOpts = append(tgt.DfltOpts, optChain)
+		return
+	}
+
 	opts := strings.Split(d, ",")
 	d = opts[0]
 	opts = opts[1:]
+	opts = append(opts, tgt.DfltOpts...)
 
 	run, ok := runFuncs[d]
 	if !ok {
@@ -120,12 +130,10 @@ func setter(tgt *Target, opts []string) {
 func filter(tgt *Target, opts []string) {
 	elemType := strings.TrimPrefix(tgt.FldType, "[]")
 
-	var isOmitField bool
+	var isOmitField, isChain bool
 	for i := range opts {
-		if opts[i] == optOmitField {
-			isOmitField = true
-			break
-		}
+		isOmitField = isOmitField || opts[i] == optOmitField
+		isChain = isChain || opts[i] == optChain
 	}
 
 	for _, fldNm := range tgt.FldNames {
@@ -135,15 +143,22 @@ func filter(tgt *Target, opts []string) {
 			method += upperFirst(fldNm)
 		}
 
+		retVals, retStmt := tgt.FldType, "return result"
+		if isChain {
+			retVals = tgt.RcvType
+			retStmt = fmt.Sprintf("%s.%s = result\n\treturn %s", tgt.RcvName, fldNm, tgt.RcvName)
+		}
+
 		log.Printf("Adding method: %s\n", method)
 		filter := meta.Method{
 			RcvName: tgt.RcvName,
 			RcvType: tgt.RcvType,
 			Name:    method,
 			ArgType: elemType,
-			RetVals: tgt.FldType,
+			RetVals: retVals,
 			FldName: fldNm,
 			FldType: tgt.FldType,
+			Misc:    map[string]interface{}{"RetStmt": retStmt},
 			Tmpl:    "filter",
 		}
 		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &filter)
