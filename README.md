@@ -53,7 +53,7 @@ Always uses pointer receiver.
 `filter` (slice only)
 
 Generates a method that returns a copy of the slice, omitting elements that are rejected by the given function.
-Method name is `Filter` followed by the name of the field.
+Method name is `Filter` followed by the name of the field. Includes a `Filter*N` method to support limit/contains/findFirst functionality.
 Uses value receiver by default.
 
 Options

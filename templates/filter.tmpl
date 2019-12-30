@@ -1,6 +1,11 @@
 // {{.Name}} returns a copy of {{.FldName}}, omitting elements that are rejected by the given function.
+func ({{.RcvName}} {{.RcvType}}) {{.Name}}(fn func({{.ArgType}}) bool) {{.RetVals}} {
+	return {{.RcvName}}.{{.Name}}N(fn, -1)
+}
+
+// {{.Name}}N returns a copy of {{.FldName}}, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
-func ({{.RcvName}} {{.RcvType}}) {{.Name}}(fn func({{.ArgType}}) bool, n int) {{.RetVals}} {
+func ({{.RcvName}} {{.RcvType}}) {{.Name}}N(fn func({{.ArgType}}) bool, n int) {{.RetVals}} {
 	cap := n
 	if n < 1 {
 		cap = len({{.RcvName}}.{{.FldName}})

@@ -54,8 +54,13 @@ func (f Foo) Labels() []string {
 }
 
 // FilterLabels returns a copy of labels, omitting elements that are rejected by the given function.
+func (f Foo) FilterLabels(fn func(string) bool) []string {
+	return f.FilterLabelsN(fn, -1)
+}
+
+// FilterLabelsN returns a copy of labels, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
-func (f Foo) FilterLabels(fn func(string) bool, n int) []string {
+func (f Foo) FilterLabelsN(fn func(string) bool, n int) []string {
 	cap := n
 	if n < 1 {
 		cap = len(f.labels)
@@ -146,8 +151,13 @@ func (b *Bar) SetTimes(t []time.Time) {
 }
 
 // FilterTimes returns a copy of times, omitting elements that are rejected by the given function.
+func (b Bar) FilterTimes(fn func(time.Time) bool) []time.Time {
+	return b.FilterTimesN(fn, -1)
+}
+
+// FilterTimesN returns a copy of times, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
-func (b Bar) FilterTimes(fn func(time.Time) bool, n int) []time.Time {
+func (b Bar) FilterTimesN(fn func(time.Time) bool, n int) []time.Time {
 	cap := n
 	if n < 1 {
 		cap = len(b.times)
