@@ -44,7 +44,7 @@ func TestFoo_SetSize(t *testing.T) {
 func TestFoo_FilterLabels(t *testing.T) {
 	f := Foo{labels: []string{"a", "aa", "b", "bb"}}
 	isMultiByte := func(s string) bool { return len(s) > 1 }
-	if got := f.FilterLabels(isMultiByte, -1); !reflect.DeepEqual(got, []string{"aa", "bb"}) {
+	if got := f.FilterLabels(isMultiByte); !reflect.DeepEqual(got, []string{"aa", "bb"}) {
 		t.Errorf("FilterLabels() = %v, want %v", got, []string{"aa", "bb"})
 	}
 }

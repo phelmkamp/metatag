@@ -27,24 +27,28 @@ func Example() {
 	hasName := func(p Person) bool { return p.Name == name }
 
 	name = "David"
-	if found := NewPersons(ps).Filter(hasName, 1).Result(); len(found) > 0 {
+	if found := NewPersons(ps).FilterN(hasName, 1).Result(); len(found) > 0 {
 		// contains David
 		fmt.Println(found[0])
 	}
 
 	name = "Bob"
-	if found := NewPersons(ps).Filter(hasName, 1).Result(); len(found) > 0 {
+	if found := NewPersons(ps).FilterN(hasName, 1).Result(); len(found) > 0 {
 		// contains Bob
 		fmt.Println(found[0])
 	}
 
 	ages := NewPersons(ps).
 		// exclude Bob
-		Filter(func(p Person) bool { return p.Name != name }, -1).
+		Filter(func(p Person) bool {
+			return p.Name != "Bob"
+		}).
 		// sort by name
 		Sort().
 		// map to ages
-		MapToInt(func(p Person) int { return time.Now().Year() - p.Birthdate.Year() })
+		MapToInt(func(p Person) int {
+			return time.Now().Year() - p.Birthdate.Year()
+		})
 	fmt.Println(ages)
 
 	// Output: Bob

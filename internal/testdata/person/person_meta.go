@@ -21,8 +21,13 @@ func NewPersons(result []Person) Persons {
 }
 
 // Filter returns a copy of result, omitting elements that are rejected by the given function.
+func (p Persons) Filter(fn func(Person) bool) Persons {
+	return p.FilterN(fn, -1)
+}
+
+// FilterN returns a copy of result, omitting elements that are rejected by the given function.
 // The n argument determines the maximum number of elements to return (n < 1: all elements).
-func (p Persons) Filter(fn func(Person) bool, n int) Persons {
+func (p Persons) FilterN(fn func(Person) bool, n int) Persons {
 	cap := n
 	if n < 1 {
 		cap = len(p.result)

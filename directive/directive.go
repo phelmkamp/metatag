@@ -150,6 +150,7 @@ func filter(tgt *Target, opts []string) {
 		}
 
 		log.Printf("Adding method: %s\n", method)
+		log.Printf("Adding method: %sN\n", method)
 		filter := meta.Method{
 			RcvName: tgt.RcvName,
 			RcvType: tgt.RcvType,
