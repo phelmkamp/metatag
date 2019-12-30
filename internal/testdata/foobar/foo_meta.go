@@ -4,9 +4,9 @@
 package foobar
 
 import (
-	"fmt"
 	"reflect"
 	"time"
+	"fmt"
 )
 
 // NewFoo creates a new Foo with the given initial values.

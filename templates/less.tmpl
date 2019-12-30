@@ -1,5 +1,5 @@
 // Less reports whether the element with
 // index i should sort before the element with index j.
 func ({{.RcvName}} {{.RcvType}}) Less(i, j int) bool {
-	return {{.RcvName}}.{{.FldName}}[i].String() < {{.RcvName}}.{{.FldName}}[j].String()
+	{{.Misc.RetStmt}}
 }
