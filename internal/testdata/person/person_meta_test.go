@@ -44,7 +44,9 @@ func Example() {
 			return p.Name != "Bob"
 		}).
 		// sort by name
-		Sort().
+		Sort(func(vi, vj Person) bool {
+			return vi.Name < vj.Name
+		}).
 		// map to ages
 		MapToInt(func(p Person) int {
 			return time.Now().Year() - p.Birthdate.Year()
@@ -79,7 +81,9 @@ func TestPersons_Sort(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.p.Sort()
+			tt.p.Sort(func(vi, vj Person) bool {
+				return vi.Name < vj.Name
+			})
 			if !reflect.DeepEqual(tt.p.Result(), tt.want) {
 				t.Errorf("got = %v, want %v", tt.p.Result(), tt.want)
 			}

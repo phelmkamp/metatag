@@ -12,6 +12,7 @@ import (
 const (
 	optOmitField = "omitfield"
 	optStringer  = "stringer"
+	optFunc      = "func"
 	optReflect   = "reflect"
 	optChain     = "chain"
 )
@@ -221,6 +222,87 @@ func sort(tgt *Target, opts []string) {
 
 	log.Println("Adding method: Len")
 	log.Println("Adding method: Swap")
+	lenSwap := meta.Method{
+		RcvName: tgt.RcvName,
+		RcvType: tgt.RcvType,
+		FldName: fldNm,
+		Tmpl:    "len_swap",
+	}
+	tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &lenSwap)
+
+	var isStringer, isFunc bool
+	for i := range opts {
+		if opts[i] == optFunc {
+			isFunc = true
+			break
+		}
+		if opts[i] == optStringer {
+			isStringer = true
+			break
+		}
+	}
+
+	if isFunc {
+		elemType := strings.TrimPrefix(tgt.FldType, "[]")
+		lesserNm := lowerFirst(tgt.RcvType) + "Lesser"
+
+		log.Println("Adding type: " + lesserNm)
+		lesser := meta.Type{
+			Name:  lesserNm,
+			Embed: tgt.RcvType,
+			Misc: map[string]interface{}{
+				"ElemType": elemType,
+			},
+			Tmpl: "type_lesser",
+		}
+		tgt.MetaFile.Types = append(tgt.MetaFile.Types, lesser)
+
+		log.Println("Adding method: Less")
+		less := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: lesserNm,
+			FldName: fldNm,
+			Misc: map[string]interface{}{
+				"RetStmt": fmt.Sprintf(
+					"return %s.less(%s.%s[i], %s.%s[j])",
+					tgt.RcvName, tgt.RcvName, fldNm, tgt.RcvName, fldNm,
+				),
+			},
+			Tmpl: "less",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &less)
+
+		log.Println("Adding method: Sort")
+		sort := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: tgt.RcvType,
+			ArgType: elemType,
+			Misc: map[string]interface{}{
+				"Lesser": lesserNm,
+			},
+			Tmpl: "sort_func",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &sort)
+		return
+	}
+
+	if isStringer {
+		log.Println("Adding method: Less")
+		less := meta.Method{
+			RcvName: tgt.RcvName,
+			RcvType: tgt.RcvType,
+			FldName: fldNm,
+			Misc: map[string]interface{}{
+				"RetStmt": fmt.Sprintf(
+					"return %s.%s[i].String() < %s.%s[j].String()",
+					tgt.RcvName, fldNm, tgt.RcvName, fldNm,
+				),
+			},
+			Tmpl: "less",
+		}
+		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &less)
+	}
+
 	log.Println("Adding method: Sort")
 	sort := meta.Method{
 		RcvName: tgt.RcvName,
@@ -229,24 +311,6 @@ func sort(tgt *Target, opts []string) {
 		Tmpl:    "sort",
 	}
 	tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &sort)
-
-	var isStringer bool
-	for i := range opts {
-		if opts[i] == optStringer {
-			isStringer = true
-			break
-		}
-	}
-	if isStringer {
-		log.Println("Adding method: Less")
-		less := meta.Method{
-			RcvName: tgt.RcvName,
-			RcvType: tgt.RcvType,
-			FldName: fldNm,
-			Tmpl:    "less",
-		}
-		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &less)
-	}
 }
 
 // stringer adds each name of the given field to the String() implementation.

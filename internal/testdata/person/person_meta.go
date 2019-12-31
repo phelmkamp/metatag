@@ -8,6 +8,11 @@ import (
 	"sort"
 )
 
+type personsLesser struct {
+	Persons
+	less func(vi, vj Person) bool
+}
+
 // String returns the "native" format of Person. Implements the fmt.Stringer interface.
 func (p Person) String() string {
 	return fmt.Sprintf("%v", p.Name)
@@ -63,16 +68,19 @@ func (p Persons) Swap(i, j int) {
 	p.result[i], p.result[j] = p.result[j], p.result[i]
 }
 
-// Sort is a convenience method.
-func (p Persons) Sort() Persons {
-	sort.Sort(p)
-	return p
-}
-
 // Less reports whether the element with
 // index i should sort before the element with index j.
-func (p Persons) Less(i, j int) bool {
-	return p.result[i].String() < p.result[j].String()
+func (p personsLesser) Less(i, j int) bool {
+	return p.less(p.result[i], p.result[j])
+}
+
+// Sort sorts the collection using the given less function.
+func (p Persons) Sort(less func(vi, vj Person) bool) Persons {
+    sort.Sort(personsLesser{
+        Persons: p,
+        less: less,
+    })
+    return p
 }
 
 // Result returns the value of result.

@@ -68,8 +68,13 @@ Uses value receiver by default.
 
 `sort` (slice only)
 
-Generates `Len` and `Swap` methods to implement [sort.Interface](https://golang.org/pkg/sort/#Interface), along with a `Sort` convenience method. Include the `stringer` option to generate a `Less` method that compares elements by their string representations. Otherwise, a `Less` method must be implemented separately.
+Generates `Len` and `Swap` methods to implement [sort.Interface](https://golang.org/pkg/sort/#Interface), along with a `Sort` convenience method.
+A `Less` method can be implemented separately or generated using one of the options.
 Uses value receivers by default.
+
+Options
+* `stringer`: generate a `Less` method that compares elements by their string representations 
+* `func`: generate a `Less` method that accepts a less function
 
 `wrapper` (slice only)
 

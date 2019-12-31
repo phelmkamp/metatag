@@ -1,0 +1,8 @@
+// Sort sorts the collection using the given less function.
+func ({{.RcvName}} {{.RcvType}}) Sort(less func(vi, vj {{.ArgType}}) bool) {{.RcvType}} {
+    sort.Sort({{.Misc.Lesser}}{
+        {{.RcvType}}: {{.RcvName}},
+        less: less,
+    })
+    return {{.RcvName}}
+}
