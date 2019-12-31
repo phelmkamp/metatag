@@ -116,3 +116,7 @@ Specifies that a pointer receiver be used for all subsequent directives.
 
 	Struct tags are well suited for this task because they are designed to provide auxilliary information to tools/packages in a concise and unobtrusive way.
 	Also, generating methods for a struct gives us a nice "namespace" with a low probability of collisions (as opposed to package-level functions).
+	
+4. What is a slice wrapper?
+
+	A slice wrapper is a struct that contains a slice, allowing you to define methods that operate on the slice. This is similar to the [slice types](https://golang.org/pkg/sort/#StringSlice) in the sort package, but by using a struct we can define meta tags for the desired functionality. The methods can also return the wrapper type to support chaining.
