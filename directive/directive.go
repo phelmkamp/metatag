@@ -278,22 +278,13 @@ func sort(tgt *Target, opts []string) {
 			RcvType: tgt.RcvType,
 			ArgType: elemType,
 			Misc: map[string]interface{}{
-				"Lesser": lowerFirst(tgt.RcvType) + "Lesser",
+				"Lesser": lesserNm,
 			},
 			Tmpl: "sort_func",
 		}
 		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &sort)
 		return
 	}
-
-	log.Println("Adding method: Sort")
-	sort := meta.Method{
-		RcvName: tgt.RcvName,
-		RcvType: tgt.RcvType,
-		FldName: fldNm,
-		Tmpl:    "sort",
-	}
-	tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &sort)
 
 	if isStringer {
 		log.Println("Adding method: Less")
@@ -311,6 +302,15 @@ func sort(tgt *Target, opts []string) {
 		}
 		tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &less)
 	}
+
+	log.Println("Adding method: Sort")
+	sort := meta.Method{
+		RcvName: tgt.RcvName,
+		RcvType: tgt.RcvType,
+		FldName: fldNm,
+		Tmpl:    "sort",
+	}
+	tgt.MetaFile.Methods = append(tgt.MetaFile.Methods, &sort)
 }
 
 // stringer adds each name of the given field to the String() implementation.
