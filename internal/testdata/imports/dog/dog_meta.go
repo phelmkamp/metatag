@@ -4,7 +4,7 @@
 package dog
 
 import (
-	""
+	"github.com/satori/go.uuid"
 )
 
 // Equal answers whether v is equivalent to d.

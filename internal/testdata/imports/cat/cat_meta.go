@@ -4,7 +4,7 @@
 package cat
 
 import (
-	""
+	"github.com/satori/go.uuid"
 )
 
 // GetUuid returns the value of Uuid.
