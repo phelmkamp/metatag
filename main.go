@@ -13,6 +13,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"golang.org/x/tools/go/packages"
+
 	"github.com/phelmkamp/metatag/directive"
 	"github.com/phelmkamp/metatag/meta"
 )
@@ -76,7 +78,12 @@ func main() {
 			tgt := directive.Target{
 				MetaFile: meta.NewFile(astFile.Name.Name),
 			}
-			importPaths := make([]string, 0, 8)
+			cfg := &packages.Config{Mode: packages.NeedName | packages.NeedImports}
+			pkgs, err := packages.Load(cfg, cleanPath)
+			if err != nil {
+				return err
+			}
+			importPaths := pkgs[0].Imports
 
 			ast.Inspect(astFile, func(n ast.Node) bool {
 				var expr ast.Expr
@@ -84,9 +91,6 @@ func main() {
 				case *ast.TypeSpec:
 					expr = nt.Type
 					tgt.RcvType = nt.Name.Name
-				case *ast.ImportSpec:
-					p := strings.Trim(nt.Path.Value, `"`)
-					importPaths = append(importPaths, p)
 				}
 
 				if expr == nil {
@@ -153,13 +157,10 @@ func main() {
 
 					if fldPkg != "" {
 						var importPath string
-						for _, s := range importPaths {
-							subs := strings.Split(s, "/")
-							last := subs[len(subs)-1]
-							if last == fldPkg {
-								importPath = s
-								break
-							}
+						for _, p := range importPaths {
+    							if p.Name == fldPkg {
+        							importPath = p.PkgPath
+    							}
 						}
 						log.Printf("Adding import: \"%s\"\n", importPath)
 						tgt.MetaFile.Imports[importPath] = struct{}{}
