@@ -143,6 +143,8 @@ func main() {
 						}
 					case *ast.MapType:
 						fldTgt.FldType = fmt.Sprintf("map[%s]%s", ft.Key.(*ast.Ident).Name, ft.Value.(*ast.Ident).Name)
+					case interface{}:
+						fldTgt.FldType = "interface{}"
 					default:
 						log.Printf("Unsupported field type: %v\n", ft)
 						continue
@@ -158,9 +160,9 @@ func main() {
 					if fldPkg != "" {
 						var importPath string
 						for _, p := range importPaths {
-    							if p.Name == fldPkg {
-        							importPath = p.PkgPath
-    							}
+							if p.Name == fldPkg {
+								importPath = p.PkgPath
+							}
 						}
 						log.Printf("Adding import: \"%s\"\n", importPath)
 						tgt.MetaFile.Imports[importPath] = struct{}{}
